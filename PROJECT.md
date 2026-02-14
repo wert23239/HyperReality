@@ -37,16 +37,16 @@ Each reader's version is encoded: `1A-2C-3B-4-5-6A-7C-8B-9A-10C-11`
 4. **Results** — book code, chapter lineup, payment links
 
 ## Payment
-- **Venmo:** $20 → get the PDF
-- **Amazon:** $5 → self-published print version
-- TODO: figure out payment verification (how to prevent cheating)
+- **Print only** — no PDF/digital version
+- **Amazon KDP** self-published, ~$5
+- Every copy has the reader's NAME on the cover
 
 ## Production Pipeline
-1. Survey → book code
-2. Book code → InDesign script assembles the PDF from chapter files
-3. PDF delivered (email? download link after Venmo?)
-4. Amazon: each version self-published (or on-demand?)
-- TODO: how many versions to actually publish on Amazon?
+1. Survey → book code + reader's name
+2. Book code → InDesign script assembles interior from chapter files
+3. Generate personalized cover with reader's name
+4. Upload to Amazon KDP → reader buys their unique copy
+- TODO: can KDP handle thousands of unique listings? Or do we generate on-demand somehow?
 
 ## Tech Stack
 - Next.js 14 (app router)

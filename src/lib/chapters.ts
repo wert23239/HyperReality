@@ -1,64 +1,61 @@
 export interface Chapter {
-  id: string;
   section: number;
+  variant?: string;
   title: string;
-  description: string;
-  pages: number;
+  everyone?: boolean;
 }
 
-export const ALL_CHAPTERS: Chapter[] = [
-  { id: "1A", section: 1, title: "F.r.a.m.e.w.o.r.k.s.", description: "Narcissistic stuff that spells out frameworks", pages: 10 },
-  { id: "1B", section: 1, title: "Tutorial", description: "About writing", pages: 10 },
-  { id: "1C", section: 1, title: "Box Theory", description: "People are put into boxes in your head", pages: 10 },
-  { id: "2A", section: 2, title: "Taxes", description: "Things take upfront annoyance to be enjoyed", pages: 10 },
-  { id: "2B", section: 2, title: "Pyramid Theory", description: "Maslow's pyramid and beyond", pages: 10 },
-  { id: "2C", section: 2, title: "Box Theory P.2", description: "Things are put into boxes", pages: 10 },
-  { id: "3A", section: 3, title: "Categories", description: "All things that can be graphed elegantly", pages: 10 },
-  { id: "3B", section: 3, title: "Death Theory", description: "Continuation of past book, condensed", pages: 10 },
-  { id: "3C", section: 3, title: "Therapy", description: "What I took out of therapy", pages: 10 },
-  { id: "4", section: 4, title: "Hard Mode", description: "Two sides of controversial questions", pages: 10 },
-  { id: "5", section: 5, title: "Uniqueness", description: "Large variation, catch-all of random pages", pages: 10 },
-  { id: "6A", section: 6, title: "Void Theory", description: "Each day has limited time, how you fill it", pages: 10 },
-  { id: "6B", section: 6, title: "Game Theory", description: "Everyday tricks in love and life", pages: 10 },
-  { id: "6C", section: 6, title: "Plan(e) Theory", description: "Thoughts during travel", pages: 10 },
-  { id: "7A", section: 7, title: "A Retrospective", description: "Ketamine thoughts about other chapters", pages: 10 },
-  { id: "7B", section: 7, title: "The Simp", description: "Why simping is bad", pages: 10 },
-  { id: "7C", section: 7, title: "A Spectrum", description: "Rewriting flawed black-and-white metrics", pages: 10 },
-  { id: "8A", section: 8, title: "Mindset", description: "Framing things differently", pages: 10 },
-  { id: "8B", section: 8, title: "The Social Death Penalty", description: "Cancelling people and why it's bad", pages: 10 },
-  { id: "8C", section: 8, title: "Salt & Pepper", description: "Adding spice to make things better", pages: 10 },
-  { id: "9A", section: 9, title: "The Draft", description: "World War 3 thoughts", pages: 10 },
-  { id: "9B", section: 9, title: "The Social Death Penalty P.2", description: "Alternatives to canceling", pages: 10 },
-  { id: "9C", section: 9, title: "Substance Abuse", description: "Abusing things that aren't drugs, and drugs", pages: 10 },
-  { id: "10A", section: 10, title: "Type 2 Fun", description: "Fun even when it doesn't seem like it", pages: 10 },
-  { id: "10B", section: 10, title: "Endless Pattern", description: "Same shit over and over, new year new girl", pages: 10 },
-  { id: "10C", section: 10, title: "Default Mode", description: "Same shit over and over, same life same girl", pages: 10 },
-  { id: "11", section: 11, title: "Hyper Reality", description: "Last chapter summing everything up", pages: 10 },
-];
+export const chapterMap: Record<string, string> = {
+  "1A": "F.r.a.m.e.w.o.r.k.s.",
+  "1B": "Tutorial",
+  "1C": "Box Theory",
+  "2A": "Taxes",
+  "2B": "Pyramid Theory",
+  "2C": "Box Theory P.2",
+  "3A": "Categories",
+  "3B": "Death Theory",
+  "3C": "Therapy",
+  "4": "Hard Mode",
+  "5": "Uniqueness",
+  "6A": "Void Theory",
+  "6B": "Game Theory",
+  "6C": "Plan(e) Theory",
+  "7A": "A Retrospective",
+  "7B": "The Simp",
+  "7C": "A Spectrum",
+  "8A": "Mindset",
+  "8B": "Social Death Penalty",
+  "8C": "Salt & Pepper",
+  "9A": "The Draft",
+  "9B": "Social Death Penalty P.2",
+  "9C": "Substance Abuse",
+  "10A": "Type 2 Fun",
+  "10B": "Endless Pattern",
+  "10C": "Default Mode",
+  "11": "Hyper Reality",
+};
 
-const FIXED_SECTIONS = [4, 5, 11];
-const VARIANT_SECTIONS = [1, 2, 3, 6, 7, 8, 9, 10];
-const ALL_SECTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+// Maps question index to section number
+export const questionToSection = [1, 2, 3, 6, 7, 8, 9, 10];
+export const fixedSections = [4, 5, 11];
 
-export interface BookSelection {
-  code: string;
-  chapters: Chapter[];
-  totalPages: number;
-}
-
-export function buildBook(variants: Record<number, string>): BookSelection {
-  const chapters: Chapter[] = [];
-
-  for (const section of ALL_SECTIONS) {
-    if (FIXED_SECTIONS.includes(section)) {
-      chapters.push(ALL_CHAPTERS.find((c) => c.section === section)!);
+export function buildBookCode(answers: Record<number, string>): string {
+  const parts: string[] = [];
+  for (let s = 1; s <= 11; s++) {
+    if ([4, 5, 11].includes(s)) {
+      parts.push(String(s));
     } else {
-      const variant = variants[section] || "A";
-      const id = `${section}${variant}`;
-      chapters.push(ALL_CHAPTERS.find((c) => c.id === id)!);
+      const qIdx = questionToSection.indexOf(s);
+      const variant = qIdx >= 0 ? answers[qIdx] || "A" : "A";
+      parts.push(`${s}${variant}`);
     }
   }
+  return parts.join("-");
+}
 
-  const code = chapters.map((c) => c.id).join("-");
-  return { code, chapters, totalPages: chapters.length * 10 };
+export function getChaptersFromCode(code: string): { key: string; title: string }[] {
+  return code.split("-").map((part) => ({
+    key: part,
+    title: chapterMap[part] || "Unknown",
+  }));
 }

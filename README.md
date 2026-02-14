@@ -1,28 +1,29 @@
-# HYPER REALITY
+# Hyper Reality
 
-> a cockroach vs. a king?
+**The Mysterious Death of Alex Lambert 2** — A book unique to YOU.
 
-A philosophy/self-help book where everyone gets a different version based on a personality survey. Built with Next.js 14, Tailwind CSS, TypeScript.
+A Next.js 14 website for an interactive choose-your-own-adventure book. Readers take a personality survey that determines which chapter variants they receive, creating a unique 110-page book from 11 sections.
 
-## Design
+## Stack
 
-Inspired by The Binding of Isaac — dark, hand-drawn, roguelike aesthetic. Three unique dice (D3, D4, D5) animate on the homepage representing the randomness of your book.
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- Google Fonts (Caveat + Inter)
 
 ## Pages
 
-- **/** — Homepage with animated dice, title, CTA
-- **/survey** — Game-like personality quiz (8 questions)
-- **/results** — Your unique book code, chapter lineup, payment options
+- `/` — Homepage with H-diagram, floating dice, and CTA
+- `/survey` — 10 personality questions, one at a time
+- `/results` — Unique book code, chapter listing, payment links
 
-## Book Structure
-
-11 chapters, 110 pages. 8 sections have A/B/C variants chosen by survey answers. 3 sections are universal. **6,561 possible book combinations.**
-
-## Run
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+## Chapter Structure
+
+8 survey questions map to 8 variable sections (1-3, 6-10) with A/B/C variants each. Sections 4, 5, and 11 are fixed for all readers. This creates 6,561 possible unique books (3^8).

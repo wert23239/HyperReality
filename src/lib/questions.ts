@@ -1,89 +1,98 @@
 export interface Question {
   id: number;
-  section: number;
   text: string;
-  options: { label: string; variant: "A" | "B" | "C" }[];
+  options: { label: string; value: string; text: string }[];
 }
 
-export const QUESTIONS: Question[] = [
+export const questions: Question[] = [
+  {
+    id: 0,
+    text: "You're at a party. Do you:",
+    options: [
+      { label: "A", value: "A", text: "Find the dog" },
+      { label: "B", value: "B", text: "Start a debate about something no one cares about" },
+      { label: "C", value: "C", text: "Leave early and feel guilty about it" },
+    ],
+  },
   {
     id: 1,
-    section: 1,
-    text: "You find a wallet on the ground with $500 cash. No one is around. What do you do?",
+    text: "Pick your poison:",
     options: [
-      { label: "Turn it in to the nearest authority", variant: "A" },
-      { label: "Take the cash, leave the wallet", variant: "B" },
-      { label: "Keep it all — finder's keepers", variant: "C" },
+      { label: "A", value: "A", text: "Anxiety about the future" },
+      { label: "B", value: "B", text: "Nostalgia for the past" },
+      { label: "C", value: "C", text: "Overthinking the present" },
     ],
   },
   {
     id: 2,
-    section: 2,
-    text: "How do you feel about rules?",
+    text: "Someone cancels plans:",
     options: [
-      { label: "They exist for a reason", variant: "A" },
-      { label: "Suggestions, mostly", variant: "B" },
-      { label: "Made to be broken", variant: "C" },
+      { label: "A", value: "A", text: "Sweet relief" },
+      { label: "B", value: "B", text: "Genuine rage" },
+      { label: "C", value: "C", text: "You already expected it" },
     ],
   },
   {
     id: 3,
-    section: 3,
-    text: "It's 3 AM. You can't sleep. What are you doing?",
+    text: "Your therapist says be more vulnerable:",
     options: [
-      { label: "Reading or journaling", variant: "A" },
-      { label: "Doom-scrolling", variant: "B" },
-      { label: "Texting someone I shouldn't", variant: "C" },
+      { label: "A", value: "A", text: "You laugh nervously" },
+      { label: "B", value: "B", text: "You actually try and cry" },
+      { label: "C", value: "C", text: "You ghost your therapist" },
     ],
   },
   {
     id: 4,
-    section: 6,
-    text: "Someone cuts you off in traffic. Your reaction?",
+    text: "3am can't sleep, thinking about:",
     options: [
-      { label: "Deep breath, move on", variant: "A" },
-      { label: "Mutter something under my breath", variant: "B" },
-      { label: "Full horn, maybe a finger", variant: "C" },
+      { label: "A", value: "A", text: "What you're doing with your life" },
+      { label: "B", value: "B", text: "That embarrassing thing from 2014" },
+      { label: "C", value: "C", text: "Whether a hotdog is a sandwich" },
     ],
   },
   {
     id: 5,
-    section: 7,
-    text: "Your friend asks for brutal honesty. How honest are you?",
+    text: "A friend needs help moving:",
     options: [
-      { label: "Gentle truth", variant: "A" },
-      { label: "Honest but tactful", variant: "B" },
-      { label: "Scorched earth", variant: "C" },
+      { label: "A", value: "A", text: "You show up with snacks" },
+      { label: "B", value: "B", text: "You suddenly have plans" },
+      { label: "C", value: "C", text: "You help but silently keep score" },
     ],
   },
   {
     id: 6,
-    section: 8,
-    text: "You get cancelled online. What do you do?",
+    text: "You get a compliment:",
     options: [
-      { label: "Apologize and reflect", variant: "A" },
-      { label: "Go silent, wait it out", variant: "B" },
-      { label: "Double down", variant: "C" },
+      { label: "A", value: "A", text: "Deflect immediately" },
+      { label: "B", value: "B", text: "Suspicious — what do they want?" },
+      { label: "C", value: "C", text: "Save it in your brain forever" },
     ],
   },
   {
     id: 7,
-    section: 9,
-    text: "How do you handle a breakup?",
+    text: "Your love language is:",
     options: [
-      { label: "Process it, grow from it", variant: "A" },
-      { label: "Rebound immediately", variant: "B" },
-      { label: "Burn it all down", variant: "C" },
+      { label: "A", value: "A", text: "Acts of service (doing things)" },
+      { label: "B", value: "B", text: "Quality time (being there)" },
+      { label: "C", value: "C", text: "Words (saying the right thing)" },
     ],
   },
   {
     id: 8,
-    section: 10,
-    text: "A cockroach or a king?",
+    text: "You open your phone. First app:",
     options: [
-      { label: "A king — obviously", variant: "A" },
-      { label: "Depends on the day", variant: "B" },
-      { label: "A cockroach survives everything", variant: "C" },
+      { label: "A", value: "A", text: "Notes app — you had a thought" },
+      { label: "B", value: "B", text: "Social media — you need to feel something" },
+      { label: "C", value: "C", text: "Weather — you like to be prepared" },
+    ],
+  },
+  {
+    id: 9,
+    text: "Your ideal Saturday:",
+    options: [
+      { label: "A", value: "A", text: "An adventure you'll barely remember" },
+      { label: "B", value: "B", text: "Doing absolutely nothing" },
+      { label: "C", value: "C", text: "Something productive disguised as fun" },
     ],
   },
 ];
