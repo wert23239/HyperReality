@@ -22,13 +22,23 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Tagline */}
+        <p className="font-hand text-lg text-gray-400 italic">
+          a cockroach vs. a king?
+        </p>
+
         {/* Dice */}
         <Dice />
+
+        {/* Stats */}
+        <p className="text-xs text-gray-400">
+          6,561 unique versions — no two books are the same
+        </p>
 
         {/* CTA */}
         <Link
           href="/survey"
-          className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300"
+          className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
         >
           Take the Survey
         </Link>
