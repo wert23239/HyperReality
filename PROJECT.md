@@ -89,14 +89,43 @@ Each reader's version is encoded: `1A-2C-3B-4-5-6A-7C-8B-9A-10C-11`
 **Total pages still needed:** 77
 
 ## TODOs
-- [ ] Finalize survey questions
-- [ ] Payment verification flow
-- [ ] InDesign script for PDF assembly
-- [ ] Figure out Amazon self-publish strategy
-- [ ] Domain name?
+
+### Website
+- [ ] Move scoring/chapter mapping server-side so people can't cheat by reading source code
+- [ ] Review/tweak homepage design (H-diagram, dice, layout)
+- [ ] Finalize survey questions (currently 10 placeholder questions)
+- [ ] Add name input (for personalized cover)
+- [ ] Payment flow — Venmo integration or at least verification
+- [ ] Deploy to Vercel
+- [ ] Domain — hyperreality.fun? something else?
+- [ ] Mobile responsiveness pass
+- [ ] Add a "what is this?" / about section
+
+### Book Content
 - [ ] Write remaining 77 pages
-- [ ] Edit all chapters (10 pages editing each)
-- [ ] Design book cover(s?)
+- [ ] Edit all 26 chapters (10 pages editing each)
+- [ ] Finalize chapter order / flow within each chapter
+
+### Branding
+- [ ] The 3-4-5 dice = the official logo/brand mark
+- [ ] Hire a professional designer to create a polished version of the dice logo
+- [ ] Use on: website, book cover, end page, everywhere
+- [ ] Get vector/SVG version for all uses
+
+### Production
+- [ ] InDesign script — auto-assemble PDF from chapter files based on book code
+- [ ] Cover design — personalized with reader's name
+- [ ] Amazon KDP self-publish strategy (how many versions?)
+- [ ] Test print-on-demand pipeline end to end
+
+### Infrastructure
+- [x] GitHub repo (wert23239/HyperReality)
+- [x] Next.js site built (v3 — white/clean/handwritten)
+- [ ] Set up Vercel project
+- [ ] Connect domain
+
+## Book Notes (Raw Dumps)
+- **"All Men Suck Percent"** — a page about the new way women generalize men. Heavy asterisk → a second page expanding on it. Then flip it — talk about the opposite: how men are still sexist. Both sides of the coin. **No chapter yet** — Mindset (8A) is the right fit but no space currently.
 
 ## Open Questions
 - One cover or different covers per version?
