@@ -1,140 +1,228 @@
-"use client";
+'use client';
 
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import Link from "next/link";
-import { buildBook } from "@/lib/chapters";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
-function Results() {
-  const params = useSearchParams();
-  const v = params.get("v") || "1A.2A.3A.6A.7A.8A.9A.10A";
+const sectionNames: Record<string, string> = {
+  '1A': 'F.r.a.m.e.w.o.r.k.s.',
+  '1B': 'Tutorial',
+  '1C': 'Box Theory',
+  '2A': 'Taxes',
+  '2B': 'Pyramid Theory',
+  '2C': 'Box Theory P.2',
+  '3A': 'Categories',
+  '3B': 'Death Theory',
+  '3C': 'Therapy',
+  '4': 'Hard Mode',
+  '5': 'Uniqueness',
+  '6A': 'Void Theory',
+  '6B': 'Game Theory',
+  '6C': 'Plan(e) Theory',
+  '7A': 'A Retrospective',
+  '7B': 'The Simp',
+  '7C': 'A Spectrum',
+  '8A': 'Mindset',
+  '8B': 'Social Death Penalty',
+  '8C': 'Salt & Pepper',
+  '9A': 'The Draft',
+  '9B': 'Social Death Penalty P.2',
+  '9C': 'Substance Abuse',
+  '10A': 'Type 2 Fun',
+  '10B': 'Endless Pattern',
+  '10C': 'Default Mode',
+  '11': 'Hyper Reality',
+};
 
-  // Parse "1A.2C.3B.6A.7C.8B.9A.10C" into { 1: "A", 2: "C", ... }
-  const variants: Record<number, string> = {};
-  v.split(".").forEach((chunk) => {
-    const match = chunk.match(/^(\d+)([ABC])$/);
-    if (match) variants[Number(match[1])] = match[2];
-  });
+function getFullChapterList(code: string): string[] {
+  const parts = code.split('-');
+  const chapters: string[] = [];
+  const surveyedSections = [1, 2, 3, 6, 7, 8, 9, 10];
+  let partIdx = 0;
 
-  const { code, chapters, totalPages } = buildBook(variants);
+  for (let section = 1; section <= 11; section++) {
+    if (section === 4) { chapters.push('4'); continue; }
+    if (section === 5) { chapters.push('5'); continue; }
+    if (section === 11) { chapters.push('11'); continue; }
+    if (surveyedSections.includes(section) && partIdx < parts.length) {
+      chapters.push(parts[partIdx]);
+      partIdx++;
+    }
+  }
+  return chapters;
+}
+
+export default function Results() {
+  const [code, setCode] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState(false);
+  const [revealedChapters, setRevealedChapters] = useState<number>(0);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('hr-code');
+    if (stored) {
+      setCode(stored);
+      // Dramatic reveal
+      setTimeout(() => setRevealed(true), 500);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (revealed && code) {
+      const chapters = getFullChapterList(code);
+      let i = 0;
+      const interval = setInterval(() => {
+        i++;
+        setRevealedChapters(i);
+        if (i >= chapters.length) clearInterval(interval);
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [revealed, code]);
+
+  if (!code) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-4">
+        <h1 className="font-creepster text-4xl text-[#c9a84c] mb-8">No Fate Found</h1>
+        <p className="font-elite text-[#d4a574] mb-8">You haven&apos;t rolled the dice yet.</p>
+        <Link href="/survey" className="font-creepster text-xl px-8 py-3 bg-[#8b0000] text-[#c9a84c] rounded-sm border border-[#c9a84c] border-opacity-30 pulse-glow">
+          Take the Survey
+        </Link>
+      </main>
+    );
+  }
+
+  const chapters = getFullChapterList(code);
+  const fullCode = chapters.join('-');
 
   return (
-    <main className="min-h-screen flex flex-col items-center px-6 py-20 relative">
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/8 rounded-full blur-[120px] pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-2xl">
-        {/* Book code */}
-        <div className="text-center mb-16 fade-up">
-          <p className="text-xs text-gray-600 uppercase tracking-[0.3em] mb-4 font-mono">
-            Your Version
-          </p>
-          <p className="text-lg sm:text-xl font-mono text-purple-300 tracking-wider break-all">
-            {code}
-          </p>
-          <p className="mt-4 text-sm text-gray-500">
-            1 of 6,561 possible books
-          </p>
+    <main className="min-h-screen flex flex-col items-center px-4 py-16 relative">
+      {/* Reveal animation */}
+      {!revealed && (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="font-creepster text-4xl text-[#8b0000] animate-pulse">
+            Reading your soul...
+          </div>
         </div>
+      )}
 
-        {/* Chapter list */}
-        <div className="fade-up fade-up-delay-1 mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-medium text-gray-300">Your 11 Chapters</h2>
-            <p className="text-xs text-gray-600 font-mono">
-              {totalPages} pages
+      {revealed && (
+        <div className="max-w-2xl w-full">
+          {/* Header */}
+          <div className="text-center mb-12 reveal-slam">
+            <h1 className="font-creepster text-5xl md:text-6xl text-[#c9a84c] flicker mb-4">
+              YOUR FATE
+            </h1>
+            <p className="font-elite text-[#d4a574] opacity-60 italic">has been decided</p>
+          </div>
+
+          {/* Book Code */}
+          <div className="bg-[#1a1a2e] border border-[#c9a84c] border-opacity-30 rounded-sm p-6 mb-12 text-center">
+            <p className="font-pixel text-[10px] text-[#8b0000] mb-3 tracking-widest uppercase">Your unique book code</p>
+            <p className="font-creepster text-2xl md:text-3xl text-[#c9a84c] tracking-wider break-all">
+              {fullCode}
+            </p>
+            <p className="font-pixel text-[8px] text-[#d4a574] opacity-40 mt-3">
+              one of 6,561 possible versions
             </p>
           </div>
 
-          <div className="space-y-[1px]">
-            {chapters.map((chapter, i) => (
-              <div
-                key={chapter.id}
-                className="flex items-start gap-4 px-5 py-4 bg-[#111] hover:bg-[#161616] transition-colors border-l-2 border-purple-500/20 hover:border-purple-400/40"
-                style={{ animationDelay: `${i * 50}ms` }}
-              >
-                <span className="text-xs text-purple-400/60 font-mono w-10 shrink-0 pt-0.5">
-                  {chapter.id}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm text-gray-200 font-medium">
-                    {chapter.title}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {chapter.description}
-                  </p>
+          {/* Chapter Lineup */}
+          <div className="mb-12">
+            <h2 className="font-creepster text-2xl text-[#c9a84c] mb-6 text-center">Your Chapters</h2>
+            <div className="space-y-3">
+              {chapters.map((ch, i) => (
+                <div
+                  key={i}
+                  className={`flex items-center gap-4 p-4 bg-[#1a1a2e] border border-[#c9a84c] border-opacity-10 rounded-sm transition-all duration-300
+                    ${i < revealedChapters ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-[-20px]'}
+                  `}
+                >
+                  <span className="font-creepster text-xl text-[#8b0000] min-w-[40px]">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="font-elite text-lg text-[#d4a574]">
+                    {sectionNames[ch] || ch}
+                  </span>
+                  <span className="font-pixel text-[8px] text-[#c9a84c] opacity-30 ml-auto">
+                    10 pages
+                  </span>
                 </div>
-                <span className="text-[10px] text-gray-700 font-mono ml-auto shrink-0 pt-0.5">
-                  {chapter.pages}p
-                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-12">
+            {[
+              { label: 'Chapters', value: '11' },
+              { label: 'Pages', value: '110' },
+              { label: 'Unique To You', value: '∞' },
+            ].map((stat) => (
+              <div key={stat.label} className="bg-[#1a1a2e] border border-[#c9a84c] border-opacity-10 rounded-sm p-4 text-center">
+                <div className="font-creepster text-2xl text-[#c9a84c]">{stat.value}</div>
+                <div className="font-pixel text-[8px] text-[#d4a574] opacity-40 mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Purchase */}
-        <div className="fade-up fade-up-delay-2 border border-gray-800 rounded-sm p-8 text-center">
-          <p className="text-xs text-gray-600 uppercase tracking-[0.2em] mb-6">
-            Get Your Copy
-          </p>
+          {/* Payment */}
+          <div className="border-t border-[#c9a84c] border-opacity-20 pt-8">
+            <h2 className="font-creepster text-2xl text-[#c9a84c] mb-6 text-center">Claim Your Copy</h2>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="https://venmo.com/YOUR_VENMO_HERE"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white text-sm transition-colors tracking-wide"
-            >
-              PDF — $20
-              <span className="block text-[10px] text-purple-200/60 mt-1">
-                via Venmo
-              </span>
-            </a>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* PDF via Venmo */}
+              <div className="card-glow bg-[#1a1a2e] rounded-sm p-6 text-center">
+                <div className="font-creepster text-4xl text-[#c9a84c] mb-2">$20</div>
+                <div className="font-elite text-[#d4a574] mb-4">PDF — Instant Download</div>
+                <p className="font-pixel text-[8px] text-[#d4a574] opacity-40 mb-4">
+                  Venmo your book code + payment
+                </p>
+                <a
+                  href="https://venmo.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block font-creepster text-lg px-6 py-3 bg-[#8b0000] text-[#c9a84c] rounded-sm border border-[#c9a84c] border-opacity-30 hover:bg-[#a00000] transition-all pulse-glow"
+                >
+                  Pay via Venmo
+                </a>
+              </div>
 
-            <a
-              href="https://amazon.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 border border-gray-700 hover:border-gray-500 text-gray-300 text-sm transition-colors tracking-wide"
-            >
-              Print — $5
-              <span className="block text-[10px] text-gray-500 mt-1">
-                via Amazon
-              </span>
-            </a>
+              {/* Print via Amazon */}
+              <div className="card-glow bg-[#1a1a2e] rounded-sm p-6 text-center">
+                <div className="font-creepster text-4xl text-[#c9a84c] mb-2">$5</div>
+                <div className="font-elite text-[#d4a574] mb-4">Print — Amazon</div>
+                <p className="font-pixel text-[8px] text-[#d4a574] opacity-40 mb-4">
+                  Physical copy ships to your door
+                </p>
+                <a
+                  href="https://amazon.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block font-creepster text-lg px-6 py-3 bg-[#2e1a00] text-[#c9a84c] rounded-sm border border-[#c9a84c] border-opacity-30 hover:bg-[#3e2a10] transition-all"
+                >
+                  Buy on Amazon
+                </a>
+              </div>
+            </div>
           </div>
 
-          <p className="mt-6 text-[10px] text-gray-700">
-            Include your book code in the Venmo note:
-          </p>
-          <p className="mt-1 text-xs text-gray-500 font-mono select-all">
-            {code}
-          </p>
-        </div>
+          {/* Retake */}
+          <div className="text-center mt-12">
+            <Link
+              href="/survey"
+              className="font-pixel text-[10px] text-[#8b0000] opacity-50 hover:opacity-100 transition-opacity"
+            >
+              ↻ Re-roll your fate
+            </Link>
+          </div>
 
-        {/* Retake */}
-        <div className="text-center mt-12 fade-up fade-up-delay-3">
-          <Link
-            href="/survey"
-            className="text-xs text-gray-600 hover:text-gray-400 transition-colors font-mono"
-          >
-            ← Retake survey
-          </Link>
+          {/* Footer flavor */}
+          <div className="text-center mt-16">
+            <p className="font-pixel text-[8px] text-[#c9a84c] opacity-10">
+              HYPER REALITY — a cockroach vs. a king?
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </main>
-  );
-}
-
-export default function ResultsPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center text-gray-600">
-          Loading...
-        </div>
-      }
-    >
-      <Results />
-    </Suspense>
   );
 }
