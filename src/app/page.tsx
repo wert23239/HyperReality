@@ -2,6 +2,13 @@ import Link from "next/link";
 import HDiagram from "@/components/HDiagram";
 import Dice from "@/components/Dice";
 
+/** Number of unique book versions: 3 variants ^ 8 variable sections = 6,561 */
+const UNIQUE_VERSIONS = Math.pow(3, 8);
+
+/**
+ * Home page — landing for Hyper Reality book site.
+ * Shows H-Diagram, title, tagline, dice logo, version stats, and survey CTA.
+ */
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -32,7 +39,7 @@ export default function Home() {
 
         {/* Stats */}
         <p className="text-xs text-gray-400">
-          6,561 unique versions — no two books are the same
+          {UNIQUE_VERSIONS.toLocaleString()} unique versions — no two books are the same
         </p>
 
         {/* CTA */}
