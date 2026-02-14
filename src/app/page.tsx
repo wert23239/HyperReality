@@ -2,6 +2,13 @@ import Link from "next/link";
 import HDiagram from "@/components/HDiagram";
 import Dice from "@/components/Dice";
 
+/** Number of unique book versions: 3 variants ^ 8 variable sections = 6,561 */
+const UNIQUE_VERSIONS = Math.pow(3, 8);
+
+/**
+ * Home page — landing for Hyper Reality book site.
+ * Shows H-Diagram, title, tagline, dice logo, version stats, and survey CTA.
+ */
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -22,13 +29,23 @@ export default function Home() {
           </p>
         </div>
 
+        {/* Tagline */}
+        <p className="font-hand text-lg text-gray-400 italic">
+          a cockroach vs. a king?
+        </p>
+
         {/* Dice */}
         <Dice />
+
+        {/* Stats */}
+        <p className="text-xs text-gray-400">
+          {UNIQUE_VERSIONS.toLocaleString()} unique versions — no two books are the same
+        </p>
 
         {/* CTA */}
         <Link
           href="/survey"
-          className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300"
+          className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
         >
           Take the Survey
         </Link>
