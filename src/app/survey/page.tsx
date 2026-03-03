@@ -20,6 +20,15 @@ export default function Survey() {
   const total = questions.length;
   const progress = ((current) / total) * 100;
 
+  function goBack() {
+    if (current === 0 || animating) return;
+    setAnimating(true);
+    setTimeout(() => {
+      setCurrent(current - 1);
+      setAnimating(false);
+    }, 300);
+  }
+
   function select(value: string) {
     if (animating) return;
     setAnimating(true);
@@ -80,6 +89,15 @@ export default function Survey() {
             </button>
           ))}
         </div>
+
+        {current > 0 && (
+          <button
+            onClick={goBack}
+            className="mt-6 flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 mx-auto font-body text-sm"
+          >
+            <span>←</span> Back
+          </button>
+        )}
       </div>
     </main>
   );
