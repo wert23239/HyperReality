@@ -9,14 +9,19 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const [revealed, setRevealed] = useState(0);
 
-  // Parse answers from URL
-  const answers: Record<number, string> = {};
-  searchParams.forEach((v, k) => {
-    const idx = parseInt(k);
-    if (!isNaN(idx)) answers[idx] = v;
-  });
-
-  const code = buildBookCode(answers);
+  // Support direct code param (from "Have a code?" flow) or answer params
+  const directCode = searchParams.get("code");
+  let code: string;
+  if (directCode) {
+    code = directCode.toUpperCase();
+  } else {
+    const answers: Record<number, string> = {};
+    searchParams.forEach((v, k) => {
+      const idx = parseInt(k);
+      if (!isNaN(idx)) answers[idx] = v;
+    });
+    code = buildBookCode(answers);
+  }
   const chapters = getChaptersFromCode(code);
 
   useEffect(() => {

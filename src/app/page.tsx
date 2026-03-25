@@ -2,6 +2,7 @@ import Link from "next/link";
 import HDiagram from "@/components/HDiagram";
 import Dice from "@/components/Dice";
 import FadeIn from "@/components/FadeIn";
+import CodeEntry from "@/components/CodeEntry";
 
 /** Number of unique book versions: 3 variants ^ 8 variable sections = 6,561 */
 const UNIQUE_VERSIONS = Math.pow(3, 8);
@@ -55,12 +56,17 @@ export default function Home() {
 
         {/* CTA */}
         <FadeIn delay={1000}>
-          <Link
-            href="/survey"
-            className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
-          >
-            Take the Survey
-          </Link>
+          <div className="space-y-4">
+            <Link
+              href="/survey"
+              className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
+            >
+              Take the Survey
+            </Link>
+            <div>
+              <CodeEntry />
+            </div>
+          </div>
         </FadeIn>
       </div>
     </main>
