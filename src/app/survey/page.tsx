@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { questions } from "@/lib/questions";
+
+const STORAGE_KEY = "hr-survey";
 
 const pastelBgs = [
   "hover:bg-blue-50 hover:border-accent-blue",
@@ -10,23 +12,67 @@ const pastelBgs = [
   "hover:bg-stone-100 hover:border-accent-warm",
 ];
 
+function loadSaved(): { current: number; answers: Record<number, string> } {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { current: parsed.current ?? 0, answers: parsed.answers ?? {} };
+    }
+  } catch {}
+  return { current: 0, answers: {} };
+}
+
+function save(current: number, answers: Record<number, string>) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answers }));
+  } catch {}
+}
+
 export default function Survey() {
   const router = useRouter();
-  const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [current, setCurrent] = useState(() => loadSaved().current);
+  const [answers, setAnswers] = useState<Record<number, string>>(() => loadSaved().answers);
   const [animating, setAnimating] = useState(false);
 
   const q = questions[current];
   const total = questions.length;
   const progress = ((current) / total) * 100;
 
-  function goBack() {
-    if (current === 0 || animating) return;
+  // Sync to sessionStorage on change
+  useEffect(() => { save(current, answers); }, [current, answers]);
+
+  // Push browser history entries per question so back/forward buttons work
+  useEffect(() => {
+    const initial = window.history.state?.surveyQ;
+    if (initial === undefined) {
+      window.history.replaceState({ surveyQ: current }, "");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const navigateTo = useCallback((q: number) => {
     setAnimating(true);
     setTimeout(() => {
-      setCurrent(current - 1);
+      setCurrent(q);
       setAnimating(false);
     }, 300);
+  }, []);
+
+  // Listen for browser back/forward
+  useEffect(() => {
+    function onPop(e: PopStateEvent) {
+      const q = e.state?.surveyQ;
+      if (typeof q === "number" && q >= 0 && q < total) {
+        navigateTo(q);
+      }
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [total, navigateTo]);
+
+  function goBack() {
+    if (current === 0 || animating) return;
+    window.history.back();
   }
 
   function select(value: string) {
@@ -37,10 +83,13 @@ export default function Survey() {
 
     setTimeout(() => {
       if (current < total - 1) {
-        setCurrent(current + 1);
+        const nextQ = current + 1;
+        window.history.pushState({ surveyQ: nextQ }, "");
+        setCurrent(nextQ);
         setAnimating(false);
       } else {
-        // Encode answers and go to results
+        // Clear saved state and go to results
+        sessionStorage.removeItem(STORAGE_KEY);
         const params = new URLSearchParams();
         Object.entries(next).forEach(([k, v]) => params.set(k, v));
         router.push(`/results?${params.toString()}`);
