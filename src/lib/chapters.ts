@@ -53,8 +53,36 @@ export function buildBookCode(answers: Record<number, string>): string {
   return parts.join("-");
 }
 
+const expectedCodeParts = [
+  /^1[ABC]$/,
+  /^2[ABC]$/,
+  /^3[ABC]$/,
+  /^4$/,
+  /^5$/,
+  /^6[ABC]$/,
+  /^7[ABC]$/,
+  /^8[ABC]$/,
+  /^9[ABC]$/,
+  /^10[ABC]$/,
+  /^11$/,
+];
+
+export function normalizeBookCode(code: string): string {
+  return code.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+export function isValidBookCode(code: string): boolean {
+  const normalized = normalizeBookCode(code);
+  const parts = normalized.split("-");
+  if (parts.length !== 11) return false;
+
+  return parts.every((part, index) => (
+    expectedCodeParts[index].test(part) && Boolean(chapterMap[part])
+  ));
+}
+
 export function getChaptersFromCode(code: string): { key: string; title: string }[] {
-  return code.split("-").map((part) => ({
+  return normalizeBookCode(code).split("-").map((part) => ({
     key: part,
     title: chapterMap[part] || "Unknown",
   }));

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { buildBookCode, getChaptersFromCode } from "@/lib/chapters";
+import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 import Link from "next/link";
 
 function ResultsContent() {
@@ -13,7 +13,7 @@ function ResultsContent() {
   const directCode = searchParams.get("code");
   let code: string;
   if (directCode) {
-    code = directCode.toUpperCase();
+    code = normalizeBookCode(directCode);
   } else {
     const answers: Record<number, string> = {};
     searchParams.forEach((v, k) => {
@@ -22,7 +22,8 @@ function ResultsContent() {
     });
     code = buildBookCode(answers);
   }
-  const chapters = getChaptersFromCode(code);
+  const isValid = isValidBookCode(code);
+  const chapters = isValid ? getChaptersFromCode(code) : [];
 
   useEffect(() => {
     if (revealed < chapters.length) {
@@ -30,6 +31,25 @@ function ResultsContent() {
       return () => clearTimeout(timer);
     }
   }, [revealed, chapters.length]);
+
+  if (!isValid) {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
+        <div className="max-w-md w-full text-center space-y-6">
+          <h1 className="font-hand text-5xl text-gray-900">Code not found</h1>
+          <p className="font-body text-gray-500 leading-relaxed">
+            That link doesn't match a real Hyper Reality book code. Try pasting the code again, or take the survey to generate a fresh one.
+          </p>
+          <Link
+            href="/"
+            className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
+          >
+            Back to start
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen flex flex-col items-center px-6 py-16">

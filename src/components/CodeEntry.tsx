@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getChaptersFromCode } from "@/lib/chapters";
+import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 
 /**
  * Inline "Have a code?" widget for the landing page.
@@ -14,23 +14,13 @@ export default function CodeEntry() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
-  function validate(raw: string): boolean {
-    const parts = raw.trim().split("-");
-    if (parts.length !== 11) return false;
-    // Every part must map to a known chapter
-    return parts.every((p) => {
-      const title = getChaptersFromCode(p)[0]?.title;
-      return title && title !== "Unknown";
-    });
-  }
-
   function submit() {
-    const trimmed = code.trim().toUpperCase();
-    if (!validate(trimmed)) {
+    const normalized = normalizeBookCode(code);
+    if (!isValidBookCode(normalized)) {
       setError("That doesn't look right — codes look like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
       return;
     }
-    router.push(`/results?code=${encodeURIComponent(trimmed)}`);
+    router.push(`/results?code=${encodeURIComponent(normalized)}`);
   }
 
   if (!open) {
