@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { questions } from "@/lib/questions";
+import { questionToSection } from "@/lib/chapters";
 
 const STORAGE_KEY = "hr-survey";
 
@@ -11,6 +12,11 @@ const pastelBgs = [
   "hover:bg-red-50 hover:border-accent-red",
   "hover:bg-stone-100 hover:border-accent-warm",
 ];
+
+// Only these prompts map to variable book sections. Extra prompts can stay in the
+// question bank for future expansion, but the live survey should not ask
+// questions that don't affect the generated book code.
+const surveyQuestions = questions.slice(0, questionToSection.length);
 
 function loadSaved(): { current: number; answers: Record<number, string> } {
   try {
@@ -35,8 +41,8 @@ export default function Survey() {
   const [answers, setAnswers] = useState<Record<number, string>>(() => loadSaved().answers);
   const [animating, setAnimating] = useState(false);
 
-  const q = questions[current];
-  const total = questions.length;
+  const q = surveyQuestions[current];
+  const total = surveyQuestions.length;
   const progress = ((current) / total) * 100;
 
   // Sync to sessionStorage on change
