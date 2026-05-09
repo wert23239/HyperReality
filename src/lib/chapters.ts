@@ -68,7 +68,36 @@ const expectedCodeParts = [
 ];
 
 export function normalizeBookCode(code: string): string {
-  return code.trim().toUpperCase().replace(/\s+/g, "");
+  const cleaned = code
+    .trim()
+    .toUpperCase()
+    .replace(/[–—−]/g, "-")
+    .replace(/\s*-\s*/g, "-");
+
+  const compact = cleaned.replace(/[^A-Z0-9]/g, "");
+  const parts: string[] = [];
+  let cursor = 0;
+
+  for (let section = 1; section <= 11; section++) {
+    const sectionText = String(section);
+    if (!compact.startsWith(sectionText, cursor)) {
+      return cleaned.replace(/\s+/g, "");
+    }
+
+    cursor += sectionText.length;
+    if (fixedSections.includes(section)) {
+      parts.push(sectionText);
+    } else {
+      const variant = compact[cursor];
+      if (!variant || !/[ABC]/.test(variant)) {
+        return cleaned.replace(/\s+/g, "");
+      }
+      cursor += 1;
+      parts.push(`${sectionText}${variant}`);
+    }
+  }
+
+  return cursor === compact.length ? parts.join("-") : cleaned.replace(/\s+/g, "");
 }
 
 export function isValidBookCode(code: string): boolean {
