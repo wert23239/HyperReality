@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode } from "@/lib/chapters";
+import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import Link from "next/link";
 
 function ResultsContent() {
@@ -20,7 +20,12 @@ function ResultsContent() {
       const idx = parseInt(k);
       if (!isNaN(idx)) answers[idx] = v;
     });
-    code = buildBookCode(answers);
+
+    const hasAllSurveyAnswers = questionToSection.every((_, i) => (
+      ["A", "B", "C"].includes(answers[i])
+    ));
+
+    code = hasAllSurveyAnswers ? buildBookCode(answers) : "";
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
