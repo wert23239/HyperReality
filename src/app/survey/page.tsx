@@ -129,20 +129,29 @@ export default function Survey() {
         </h2>
 
         <div className="space-y-4">
-          {q.options.map((opt, i) => (
-            <button
-              key={opt.value}
-              onClick={() => select(opt.value)}
-              className={`w-full text-left p-5 rounded-xl border-2 border-gray-200 transition-all duration-200 ${pastelBgs[i]} group`}
-            >
-              <span className="font-hand text-lg text-gray-400 group-hover:text-gray-600 mr-3">
-                {opt.label})
-              </span>
-              <span className="font-body text-gray-700 group-hover:text-gray-900">
-                {opt.text}
-              </span>
-            </button>
-          ))}
+          {q.options.map((opt, i) => {
+            const selected = answers[current] === opt.value;
+
+            return (
+              <button
+                key={opt.value}
+                onClick={() => select(opt.value)}
+                aria-pressed={selected}
+                className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                  selected
+                    ? "border-accent-blue bg-blue-50 shadow-sm"
+                    : `border-gray-200 ${pastelBgs[i]}`
+                } group`}
+              >
+                <span className={`font-hand text-lg mr-3 ${selected ? "text-accent-blue" : "text-gray-400 group-hover:text-gray-600"}`}>
+                  {opt.label})
+                </span>
+                <span className={`font-body ${selected ? "text-gray-900" : "text-gray-700 group-hover:text-gray-900"}`}>
+                  {opt.text}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {current > 0 && (
