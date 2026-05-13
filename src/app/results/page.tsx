@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import Link from "next/link";
+import CodeEntry from "@/components/CodeEntry";
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -43,13 +44,14 @@ function ResultsContent() {
         <div className="max-w-md w-full text-center space-y-6">
           <h1 className="font-hand text-5xl text-gray-900">Code not found</h1>
           <p className="font-body text-gray-500 leading-relaxed">
-            That link doesn't match a real Hyper Reality book code. Try pasting the code again, or take the survey to generate a fresh one.
+            That link doesn't match a real Hyper Reality book code. Paste the code again below, or take the survey to generate a fresh one.
           </p>
+          <CodeEntry defaultOpen />
           <Link
-            href="/"
+            href="/survey"
             className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
           >
-            Back to start
+            Take the survey
           </Link>
         </div>
       </main>
