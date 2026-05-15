@@ -23,7 +23,17 @@ function loadSaved(): { current: number; answers: Record<number, string> } {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return { current: parsed.current ?? 0, answers: parsed.answers ?? {} };
+      const answers = Object.fromEntries(
+        Object.entries(parsed.answers ?? {}).filter(([key, value]) => {
+          const index = Number(key);
+          return Number.isInteger(index) && index >= 0 && index < surveyQuestions.length && ["A", "B", "C"].includes(String(value));
+        })
+      ) as Record<number, string>;
+      const savedCurrent = Number(parsed.current);
+      const current = Number.isInteger(savedCurrent)
+        ? Math.min(Math.max(savedCurrent, 0), surveyQuestions.length - 1)
+        : 0;
+      return { current, answers };
     }
   } catch {}
   return { current: 0, answers: {} };
