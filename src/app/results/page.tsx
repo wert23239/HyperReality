@@ -101,20 +101,24 @@ function ResultsContent() {
           <h2 className="font-hand text-3xl text-center text-gray-900">Get Your Copy</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <a
-              href="#"
-              className="text-center p-6 rounded-xl border-2 border-gray-200 hover:border-accent-blue transition-colors"
+            <div
+              role="status"
+              aria-label="PDF ordering is coming soon"
+              className="text-center p-6 rounded-xl border-2 border-gray-200 bg-gray-50/60"
             >
               <p className="font-hand text-2xl text-gray-900">PDF</p>
               <p className="font-body text-sm text-gray-500 mt-1">$20 via Venmo</p>
-            </a>
-            <a
-              href="#"
-              className="text-center p-6 rounded-xl border-2 border-gray-200 hover:border-accent-red transition-colors"
+              <p className="font-body text-xs text-gray-400 mt-3">Ordering opens soon</p>
+            </div>
+            <div
+              role="status"
+              aria-label="Print ordering is coming soon"
+              className="text-center p-6 rounded-xl border-2 border-gray-200 bg-gray-50/60"
             >
               <p className="font-hand text-2xl text-gray-900">Print</p>
               <p className="font-body text-sm text-gray-500 mt-1">$5 on Amazon</p>
-            </a>
+              <p className="font-body text-xs text-gray-400 mt-3">Ordering opens soon</p>
+            </div>
           </div>
         </div>
 
