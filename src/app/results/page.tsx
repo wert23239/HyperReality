@@ -46,7 +46,7 @@ function ResultsContent() {
           <p className="font-body text-gray-500 leading-relaxed">
             That link doesn't match a real Hyper Reality book code. Paste the code again below, or take the survey to generate a fresh one.
           </p>
-          <CodeEntry defaultOpen />
+          <CodeEntry defaultOpen initialCode={directCode ?? ""} />
           <Link
             href="/survey"
             className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"

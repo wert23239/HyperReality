@@ -8,10 +8,16 @@ import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
  * Inline "Have a code?" widget for the landing page.
  * Expands into a text input on click; validates the code format and navigates to /results.
  */
-export default function CodeEntry({ defaultOpen = false }: { defaultOpen?: boolean }) {
+export default function CodeEntry({
+  defaultOpen = false,
+  initialCode = "",
+}: {
+  defaultOpen?: boolean;
+  initialCode?: string;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(defaultOpen);
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
 
   function submit() {
