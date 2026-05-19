@@ -9,6 +9,7 @@ import CodeEntry from "@/components/CodeEntry";
 function ResultsContent() {
   const searchParams = useSearchParams();
   const [revealed, setRevealed] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   // Support direct code param (from "Have a code?" flow) or answer params
   const directCode = searchParams.get("code");
@@ -32,11 +33,25 @@ function ResultsContent() {
   const chapters = isValid ? getChaptersFromCode(code) : [];
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+    return () => mediaQuery.removeEventListener("change", updatePreference);
+  }, []);
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setRevealed(chapters.length);
+      return;
+    }
+
     if (revealed < chapters.length) {
       const timer = setTimeout(() => setRevealed((r) => r + 1), 300);
       return () => clearTimeout(timer);
     }
-  }, [revealed, chapters.length]);
+  }, [revealed, chapters.length, reducedMotion]);
 
   if (!isValid) {
     return (
