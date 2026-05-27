@@ -47,9 +47,11 @@ function save(current: number, answers: Record<number, string>) {
 
 export default function Survey() {
   const router = useRouter();
-  const [current, setCurrent] = useState(() => loadSaved().current);
-  const [answers, setAnswers] = useState<Record<number, string>>(() => loadSaved().answers);
+  const [savedSurvey] = useState(() => loadSaved());
+  const [current, setCurrent] = useState(savedSurvey.current);
+  const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
   const [animating, setAnimating] = useState(false);
+  const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
 
   const q = surveyQuestions[current];
   const total = surveyQuestions.length;
@@ -88,7 +90,18 @@ export default function Survey() {
 
   function goBack() {
     if (current === 0 || animating) return;
-    window.history.back();
+
+    if (hasSurveyHistory) {
+      window.history.back();
+      return;
+    }
+
+    // A resumed survey can land on question 2+ without per-question history
+    // entries, so the visible Back control should still move to the previous
+    // question instead of sending the reader away from the survey.
+    const previousQ = current - 1;
+    window.history.replaceState({ surveyQ: previousQ }, "");
+    navigateTo(previousQ);
   }
 
   function select(value: string) {
@@ -101,6 +114,7 @@ export default function Survey() {
       if (current < total - 1) {
         const nextQ = current + 1;
         window.history.pushState({ surveyQ: nextQ }, "");
+        setHasSurveyHistory(true);
         setCurrent(nextQ);
         setAnimating(false);
       } else {
