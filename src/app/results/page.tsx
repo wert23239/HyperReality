@@ -6,6 +6,8 @@ import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode,
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
+const SURVEY_STORAGE_KEY = "hr-survey";
+
 function ResultsContent() {
   const searchParams = useSearchParams();
   const [revealed, setRevealed] = useState(0);
@@ -31,6 +33,12 @@ function ResultsContent() {
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
+
+  useEffect(() => {
+    if (isValid) {
+      sessionStorage.removeItem(SURVEY_STORAGE_KEY);
+    }
+  }, [isValid]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
