@@ -117,13 +117,23 @@ export default function Survey() {
         setHasSurveyHistory(true);
         setCurrent(nextQ);
         setAnimating(false);
-      } else {
-        // Clear saved state and go to results
-        sessionStorage.removeItem(STORAGE_KEY);
-        const params = new URLSearchParams();
-        Object.entries(next).forEach(([k, v]) => params.set(k, v));
-        router.push(`/results?${params.toString()}`);
+        return;
       }
+
+      const firstUnanswered = surveyQuestions.findIndex((_, index) => !["A", "B", "C"].includes(next[index]));
+      if (firstUnanswered !== -1) {
+        window.history.pushState({ surveyQ: firstUnanswered }, "");
+        setHasSurveyHistory(true);
+        setCurrent(firstUnanswered);
+        setAnimating(false);
+        return;
+      }
+
+      // Clear saved state and go to results
+      sessionStorage.removeItem(STORAGE_KEY);
+      const params = new URLSearchParams();
+      Object.entries(next).forEach(([k, v]) => params.set(k, v));
+      router.push(`/results?${params.toString()}`);
     }, 400);
   }
 
