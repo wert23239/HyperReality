@@ -141,14 +141,22 @@ export default function Survey() {
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
       {/* Progress */}
       <div className="w-full max-w-md mb-12">
-        <div className="h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div
+          className="h-1 bg-gray-100 rounded-full overflow-hidden"
+          role="progressbar"
+          aria-label="Survey progress"
+          aria-valuemin={1}
+          aria-valuemax={total}
+          aria-valuenow={current + 1}
+          aria-valuetext={`Question ${current + 1} of ${total}`}
+        >
           <div
             className="h-full bg-accent-blue transition-all duration-500 rounded-full"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="text-xs text-gray-400 mt-2 text-right font-body">
-          {current + 1} / {total}
+        <p className="text-xs text-gray-400 mt-2 text-right font-body" aria-live="polite">
+          Question {current + 1} of {total}
         </p>
       </div>
 
