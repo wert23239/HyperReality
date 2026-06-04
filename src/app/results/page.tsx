@@ -98,7 +98,7 @@ function ResultsContent() {
         </div>
 
         {/* Chapters */}
-        <div className="space-y-3">
+        <div className="space-y-3" aria-live="polite">
           {chapters.map((ch, i) => (
             <div
               key={ch.key}
@@ -118,6 +118,18 @@ function ResultsContent() {
             </div>
           ))}
         </div>
+
+        {!reducedMotion && revealed < chapters.length && (
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setRevealed(chapters.length)}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+            >
+              Show all chapters now
+            </button>
+          </div>
+        )}
 
         {/* Divider */}
         <div className="border-t border-gray-100 pt-8 space-y-6">
