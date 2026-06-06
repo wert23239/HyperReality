@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { questions } from "@/lib/questions";
 import { questionToSection } from "@/lib/chapters";
@@ -52,6 +52,8 @@ export default function Survey() {
   const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
   const [animating, setAnimating] = useState(false);
   const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
+  const questionHeadingRef = useRef<HTMLHeadingElement>(null);
+  const hasMountedRef = useRef(false);
 
   const q = surveyQuestions[current];
   const total = surveyQuestions.length;
@@ -59,6 +61,16 @@ export default function Survey() {
 
   // Sync to sessionStorage on change
   useEffect(() => { save(current, answers); }, [current, answers]);
+
+  // Move keyboard/screen-reader focus to the new prompt after answer/back navigation.
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    questionHeadingRef.current?.focus({ preventScroll: true });
+  }, [current]);
 
   // Push browser history entries per question so back/forward buttons work
   useEffect(() => {
@@ -166,7 +178,11 @@ export default function Survey() {
           animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
         }`}
       >
-        <h2 className="font-hand text-3xl md:text-4xl text-gray-900 mb-8 text-center leading-relaxed">
+        <h2
+          ref={questionHeadingRef}
+          tabIndex={-1}
+          className="font-hand text-3xl md:text-4xl text-gray-900 mb-8 text-center leading-relaxed outline-none"
+        >
           {q.text}
         </h2>
 
