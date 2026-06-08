@@ -12,6 +12,12 @@ export default function FadeIn({ children, delay = 0, className = "" }: FadeInPr
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (mediaQuery.matches) {
+      setVisible(true);
+      return;
+    }
+
     const timer = setTimeout(() => setVisible(true), delay);
     return () => clearTimeout(timer);
   }, [delay]);
