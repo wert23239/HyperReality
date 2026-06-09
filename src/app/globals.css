@@ -23,3 +23,23 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .chapter-row {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  main {
+    min-height: auto !important;
+    padding: 2rem !important;
+  }
+}

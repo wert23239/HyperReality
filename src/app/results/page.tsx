@@ -93,8 +93,15 @@ function ResultsContent() {
         </div>
 
         {/* Code */}
-        <div className="text-center">
+        <div className="text-center space-y-3">
           <p className="font-hand text-2xl text-accent-blue tracking-wide">{code}</p>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="no-print font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+          >
+            Print / save this chapter list
+          </button>
         </div>
 
         {/* Chapters */}
@@ -102,7 +109,7 @@ function ResultsContent() {
           {chapters.map((ch, i) => (
             <div
               key={ch.key}
-              className={`flex items-baseline gap-4 transition-all duration-500 ${
+              className={`chapter-row flex items-baseline gap-4 transition-all duration-500 ${
                 i < revealed ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
               }`}
             >
@@ -120,7 +127,7 @@ function ResultsContent() {
         </div>
 
         {!reducedMotion && revealed < chapters.length && (
-          <div className="text-center">
+          <div className="no-print text-center">
             <button
               type="button"
               onClick={() => setRevealed(chapters.length)}
@@ -132,7 +139,7 @@ function ResultsContent() {
         )}
 
         {/* Divider */}
-        <div className="border-t border-gray-100 pt-8 space-y-6">
+        <div className="no-print border-t border-gray-100 pt-8 space-y-6">
           <h2 className="font-hand text-3xl text-center text-gray-900">Get Your Copy</h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -158,7 +165,7 @@ function ResultsContent() {
         </div>
 
         {/* Back */}
-        <div className="text-center pt-4">
+        <div className="no-print text-center pt-4">
           <Link href="/" className="font-hand text-lg text-gray-400 hover:text-gray-600 transition-colors">
             ← Start over
           </Link>
