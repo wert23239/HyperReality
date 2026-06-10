@@ -12,6 +12,7 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   // Support direct code param (from "Have a code?" flow) or answer params
   const directCode = searchParams.get("code");
@@ -61,6 +62,22 @@ function ResultsContent() {
     }
   }, [revealed, chapters.length, reducedMotion]);
 
+  async function copyChapterList() {
+    const text = [
+      `Hyper Reality book code: ${code}`,
+      "",
+      ...chapters.map((ch) => `${ch.key}. ${ch.title}`),
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyStatus("copied");
+      window.setTimeout(() => setCopyStatus("idle"), 2000);
+    } catch {
+      setCopyStatus("failed");
+    }
+  }
+
   if (!isValid) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -95,13 +112,28 @@ function ResultsContent() {
         {/* Code */}
         <div className="text-center space-y-3">
           <p className="font-hand text-2xl text-accent-blue tracking-wide">{code}</p>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="no-print font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
-          >
-            Print / save this chapter list
-          </button>
+          <div className="no-print flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+            >
+              Print / save this chapter list
+            </button>
+            <button
+              type="button"
+              onClick={copyChapterList}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+              aria-live="polite"
+            >
+              {copyStatus === "copied" ? "Copied chapter list" : "Copy chapter list"}
+            </button>
+          </div>
+          {copyStatus === "failed" && (
+            <p className="no-print font-body text-xs text-red-400" role="alert">
+              Copy failed — try Print / save instead.
+            </p>
+          )}
         </div>
 
         {/* Chapters */}
