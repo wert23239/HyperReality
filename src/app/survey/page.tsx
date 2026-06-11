@@ -116,6 +116,21 @@ export default function Survey() {
     navigateTo(previousQ);
   }
 
+  function restartSurvey() {
+    if (animating) return;
+
+    const hasAnyAnswer = Object.keys(answers).length > 0;
+    if (hasAnyAnswer && !window.confirm("Clear your current answers and restart the survey?")) {
+      return;
+    }
+
+    sessionStorage.removeItem(STORAGE_KEY);
+    window.history.replaceState({ surveyQ: 0 }, "");
+    setHasSurveyHistory(false);
+    setAnswers({});
+    setCurrent(0);
+  }
+
   function select(value: string) {
     if (animating) return;
     setAnimating(true);
@@ -212,14 +227,26 @@ export default function Survey() {
           })}
         </div>
 
-        {current > 0 && (
-          <button
-            onClick={goBack}
-            className="mt-6 flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors duration-200 mx-auto font-body text-sm"
-          >
-            <span>←</span> Back
-          </button>
-        )}
+        <div className="mt-6 flex items-center justify-center gap-4 font-body text-sm">
+          {current > 0 && (
+            <button
+              type="button"
+              onClick={goBack}
+              className="flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            >
+              <span>←</span> Back
+            </button>
+          )}
+          {Object.keys(answers).length > 0 && (
+            <button
+              type="button"
+              onClick={restartSurvey}
+              className="text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors duration-200"
+            >
+              Start over
+            </button>
+          )}
+        </div>
       </div>
     </main>
   );
