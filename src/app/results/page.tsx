@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import CodeEntry from "@/components/CodeEntry";
 const SURVEY_STORAGE_KEY = "hr-survey";
 
 function ResultsContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -34,6 +35,15 @@ function ResultsContent() {
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
+
+  useEffect(() => {
+    if (!isValid) return;
+
+    const canonicalQuery = `code=${encodeURIComponent(code)}`;
+    if (searchParams.toString() !== canonicalQuery) {
+      router.replace(`/results?${canonicalQuery}`, { scroll: false });
+    }
+  }, [code, isValid, router, searchParams]);
 
   useEffect(() => {
     if (isValid) {
