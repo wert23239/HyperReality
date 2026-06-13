@@ -52,6 +52,7 @@ export default function Survey() {
   const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
   const [animating, setAnimating] = useState(false);
   const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const hasMountedRef = useRef(false);
 
@@ -61,6 +62,15 @@ export default function Survey() {
 
   // Sync to sessionStorage on change
   useEffect(() => { save(current, answers); }, [current, answers]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+    return () => mediaQuery.removeEventListener("change", updatePreference);
+  }, []);
 
   // Move keyboard/screen-reader focus to the new prompt after answer/back navigation.
   useEffect(() => {
@@ -81,12 +91,18 @@ export default function Survey() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigateTo = useCallback((q: number) => {
+    if (reducedMotion) {
+      setCurrent(q);
+      setAnimating(false);
+      return;
+    }
+
     setAnimating(true);
     setTimeout(() => {
       setCurrent(q);
       setAnimating(false);
     }, 300);
-  }, []);
+  }, [reducedMotion]);
 
   // Listen for browser back/forward
   useEffect(() => {
@@ -137,7 +153,7 @@ export default function Survey() {
     const next = { ...answers, [current]: value };
     setAnswers(next);
 
-    setTimeout(() => {
+    const advance = () => {
       if (current < total - 1) {
         const nextQ = current + 1;
         window.history.pushState({ surveyQ: nextQ }, "");
@@ -161,7 +177,13 @@ export default function Survey() {
       const params = new URLSearchParams();
       Object.entries(next).forEach(([k, v]) => params.set(k, v));
       router.push(`/results?${params.toString()}`);
-    }, 400);
+    };
+
+    if (reducedMotion) {
+      advance();
+    } else {
+      setTimeout(advance, 400);
+    }
   }
 
   return (
@@ -189,7 +211,7 @@ export default function Survey() {
 
       {/* Question */}
       <div
-        className={`max-w-md w-full transition-all duration-300 ${
+        className={`max-w-md w-full transition-all ${reducedMotion ? "duration-0" : "duration-300"} ${
           animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
         }`}
       >
@@ -210,7 +232,7 @@ export default function Survey() {
                 key={opt.value}
                 onClick={() => select(opt.value)}
                 aria-pressed={selected}
-                className={`w-full text-left p-5 rounded-xl border-2 transition-all duration-200 ${
+                className={`w-full text-left p-5 rounded-xl border-2 transition-all ${reducedMotion ? "duration-0" : "duration-200"} ${
                   selected
                     ? "border-accent-blue bg-blue-50 shadow-sm"
                     : `border-gray-200 ${pastelBgs[i]}`
@@ -232,7 +254,7 @@ export default function Survey() {
             <button
               type="button"
               onClick={goBack}
-              className="flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              className={`flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors ${reducedMotion ? "duration-0" : "duration-200"}`}
             >
               <span>←</span> Back
             </button>
@@ -241,7 +263,7 @@ export default function Survey() {
             <button
               type="button"
               onClick={restartSurvey}
-              className="text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors duration-200"
+              className={`text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors ${reducedMotion ? "duration-0" : "duration-200"}`}
             >
               Start over
             </button>
