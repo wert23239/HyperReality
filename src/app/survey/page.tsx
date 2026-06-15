@@ -214,6 +214,7 @@ export default function Survey() {
         className={`max-w-md w-full transition-all ${reducedMotion ? "duration-0" : "duration-300"} ${
           animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
         }`}
+        aria-busy={animating}
       >
         <h2
           ref={questionHeadingRef}
@@ -230,9 +231,11 @@ export default function Survey() {
             return (
               <button
                 key={opt.value}
+                type="button"
                 onClick={() => select(opt.value)}
+                disabled={animating}
                 aria-pressed={selected}
-                className={`w-full text-left p-5 rounded-xl border-2 transition-all ${reducedMotion ? "duration-0" : "duration-200"} ${
+                className={`w-full text-left p-5 rounded-xl border-2 transition-all disabled:cursor-wait disabled:pointer-events-none ${reducedMotion ? "duration-0" : "duration-200"} ${
                   selected
                     ? "border-accent-blue bg-blue-50 shadow-sm"
                     : `border-gray-200 ${pastelBgs[i]}`
