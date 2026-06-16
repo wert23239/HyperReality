@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 
@@ -16,6 +16,8 @@ export default function CodeEntry({
   initialCode?: string;
 }) {
   const router = useRouter();
+  const inputId = useId();
+  const errorId = `${inputId}-error`;
   const [open, setOpen] = useState(defaultOpen);
   const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
@@ -41,24 +43,35 @@ export default function CodeEntry({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto">
+    <form
+      className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto"
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
       <div className="flex gap-2 w-full">
+        <label htmlFor={inputId} className="sr-only">
+          Hyper Reality book code
+        </label>
         <input
+          id={inputId}
           autoFocus
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(""); }}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
           placeholder="e.g. 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11"
           className="flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId : undefined}
         />
         <button
-          onClick={submit}
+          type="submit"
           className="px-4 py-2 rounded-lg bg-accent-blue text-white font-hand text-lg hover:opacity-90 transition-opacity"
         >
           Go
         </button>
       </div>
-      {error && <p className="text-xs text-red-400 text-center" role="alert">{error}</p>}
-    </div>
+      {error && <p id={errorId} className="text-xs text-red-400 text-center" role="alert">{error}</p>}
+    </form>
   );
 }
