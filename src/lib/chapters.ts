@@ -116,3 +116,15 @@ export function getChaptersFromCode(code: string): { key: string; title: string 
     title: chapterMap[part] || "Unknown",
   }));
 }
+
+export function getAnswersFromBookCode(code: string): Record<number, string> | null {
+  const normalized = normalizeBookCode(code);
+  if (!isValidBookCode(normalized)) return null;
+
+  const parts = normalized.split("-");
+  return questionToSection.reduce<Record<number, string>>((answers, section, questionIndex) => {
+    const sectionCode = parts[section - 1];
+    answers[questionIndex] = sectionCode.slice(String(section).length);
+    return answers;
+  }, {});
+}

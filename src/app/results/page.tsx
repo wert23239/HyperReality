@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { buildBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
+import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
@@ -88,6 +88,14 @@ function ResultsContent() {
     }
   }
 
+  function reviseAnswers() {
+    const answers = getAnswersFromBookCode(code);
+    if (!answers) return;
+
+    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current: 0, answers }));
+    router.push("/survey");
+  }
+
   if (!isValid) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -137,6 +145,13 @@ function ResultsContent() {
               aria-live="polite"
             >
               {copyStatus === "copied" ? "Copied chapter list" : "Copy chapter list"}
+            </button>
+            <button
+              type="button"
+              onClick={reviseAnswers}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+            >
+              Revise answers
             </button>
           </div>
           {copyStatus === "failed" && (
