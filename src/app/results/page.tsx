@@ -103,20 +103,34 @@ function ResultsContent() {
     }
   }, [revealed, chapters.length, reducedMotion]);
 
-  async function copyChapterList() {
-    const text = [
+  function getChapterListText() {
+    return [
       `Hyper Reality book code: ${code}`,
       "",
       ...chapters.map((ch) => `${ch.key}. ${ch.title}`),
     ].join("\n");
+  }
 
+  async function copyChapterList() {
     try {
-      await copyTextToClipboard(text);
+      await copyTextToClipboard(getChapterListText());
       setCopyStatus("copied");
       window.setTimeout(() => setCopyStatus("idle"), 2000);
     } catch {
       setCopyStatus("failed");
     }
+  }
+
+  function downloadChapterList() {
+    const blob = new Blob([getChapterListText()], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `hyper-reality-${code.toLowerCase()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 
   function reviseAnswers() {
@@ -176,6 +190,13 @@ function ResultsContent() {
               aria-live="polite"
             >
               {copyStatus === "copied" ? "Copied chapter list" : "Copy chapter list"}
+            </button>
+            <button
+              type="button"
+              onClick={downloadChapterList}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+            >
+              Download .txt
             </button>
             <button
               type="button"
