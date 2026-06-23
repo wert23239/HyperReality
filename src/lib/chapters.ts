@@ -67,8 +67,19 @@ const expectedCodeParts = [
   /^11$/,
 ];
 
+export function extractBookCodeInput(input: string): string {
+  const trimmed = input.trim();
+
+  try {
+    const url = new URL(trimmed);
+    return url.searchParams.get("code") ?? trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
 export function normalizeBookCode(code: string): string {
-  const cleaned = code
+  const cleaned = extractBookCodeInput(code)
     .trim()
     .toUpperCase()
     .replace(/[–—−]/g, "-")

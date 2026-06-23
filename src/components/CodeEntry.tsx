@@ -6,7 +6,8 @@ import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 
 /**
  * Inline "Have a code?" widget for the landing page.
- * Expands into a text input on click; validates the code format and navigates to /results.
+ * Expands into a text input on click; accepts a book code or full results URL,
+ * validates the code format, and navigates to /results.
  */
 export default function CodeEntry({
   defaultOpen = false,
@@ -25,7 +26,7 @@ export default function CodeEntry({
   function submit() {
     const normalized = normalizeBookCode(code);
     if (!isValidBookCode(normalized)) {
-      setError("That doesn't look right — codes look like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
+      setError("That doesn't look right — paste a book code or results link like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
       return;
     }
     router.push(`/results?code=${encodeURIComponent(normalized)}`);
@@ -59,7 +60,7 @@ export default function CodeEntry({
           autoFocus
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(""); }}
-          placeholder="e.g. 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11"
+          placeholder="Code or results link"
           className="flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
