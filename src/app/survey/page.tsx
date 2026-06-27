@@ -58,6 +58,7 @@ export default function Survey() {
 
   const q = surveyQuestions[current];
   const total = surveyQuestions.length;
+  const allAnswersComplete = surveyQuestions.every((_, index) => ["A", "B", "C"].includes(answers[index]));
   const progress = ((current) / total) * 100;
 
   // Sync to sessionStorage on change
@@ -147,6 +148,14 @@ export default function Survey() {
     setCurrent(0);
   }
 
+  function goToResults(nextAnswers = answers) {
+    // Clear saved state and go to results
+    sessionStorage.removeItem(STORAGE_KEY);
+    const params = new URLSearchParams();
+    surveyQuestions.forEach((_, index) => params.set(String(index), nextAnswers[index]));
+    router.push(`/results?${params.toString()}`);
+  }
+
   function select(value: string) {
     if (animating) return;
     setAnimating(true);
@@ -172,11 +181,7 @@ export default function Survey() {
         return;
       }
 
-      // Clear saved state and go to results
-      sessionStorage.removeItem(STORAGE_KEY);
-      const params = new URLSearchParams();
-      Object.entries(next).forEach(([k, v]) => params.set(k, v));
-      router.push(`/results?${params.toString()}`);
+      goToResults(next);
     };
 
     if (reducedMotion) {
@@ -260,6 +265,16 @@ export default function Survey() {
               className={`flex items-center gap-2 text-gray-400 hover:text-gray-600 transition-colors ${reducedMotion ? "duration-0" : "duration-200"}`}
             >
               <span>←</span> Back
+            </button>
+          )}
+          {allAnswersComplete && (
+            <button
+              type="button"
+              onClick={() => goToResults()}
+              disabled={animating}
+              className={`text-accent-blue underline underline-offset-4 hover:text-blue-700 transition-colors disabled:cursor-wait disabled:opacity-60 ${reducedMotion ? "duration-0" : "duration-200"}`}
+            >
+              See results
             </button>
           )}
           {Object.keys(answers).length > 0 && (
