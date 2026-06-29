@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { questionToSection } from "@/lib/chapters";
 
 const STORAGE_KEY = "hr-survey";
-const TOTAL_SURVEY_QUESTIONS = 8;
+const TOTAL_SURVEY_QUESTIONS = questionToSection.length;
 
 type SavedSurvey = {
   current?: unknown;
