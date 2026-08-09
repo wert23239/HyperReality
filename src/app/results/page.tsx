@@ -7,6 +7,7 @@ import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
 const SURVEY_STORAGE_KEY = "hr-survey";
+const MAX_READER_NAME_LENGTH = 60;
 
 async function copyTextToClipboard(text: string) {
   if (navigator.clipboard?.writeText) {
@@ -45,6 +46,9 @@ function ResultsContent() {
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [readerName, setReaderName] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [nameSaved, setNameSaved] = useState(false);
 
   // Support direct code param (from "Have a code?" flow) or answer params
   const directCode = searchParams.get("code");
@@ -66,15 +70,31 @@ function ResultsContent() {
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
+  const readerNameParam = searchParams.get("name") ?? "";
+
+  function cleanReaderName(name: string) {
+    return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
+  }
 
   useEffect(() => {
     if (!isValid) return;
 
-    const canonicalQuery = `code=${encodeURIComponent(code)}`;
+    const canonicalParams = new URLSearchParams({ code });
+    const normalizedReaderName = cleanReaderName(readerNameParam);
+    if (normalizedReaderName) {
+      canonicalParams.set("name", normalizedReaderName);
+    }
+    const canonicalQuery = canonicalParams.toString();
     if (searchParams.toString() !== canonicalQuery) {
       router.replace(`/results?${canonicalQuery}`, { scroll: false });
     }
-  }, [code, isValid, router, searchParams]);
+  }, [code, isValid, readerNameParam, router, searchParams]);
+
+  useEffect(() => {
+    const normalizedReaderName = cleanReaderName(readerNameParam);
+    setReaderName(normalizedReaderName);
+    setNameInput(normalizedReaderName);
+  }, [readerNameParam]);
 
   useEffect(() => {
     if (isValid) {
@@ -106,9 +126,24 @@ function ResultsContent() {
   function getChapterListText() {
     return [
       `Hyper Reality book code: ${code}`,
+      ...(readerName ? [`Reader name: ${readerName}`] : []),
       "",
       ...chapters.map((ch) => `${ch.key}. ${ch.title}`),
     ].join("\n");
+  }
+
+  function saveReaderName() {
+    const normalizedReaderName = cleanReaderName(nameInput);
+    setReaderName(normalizedReaderName);
+    setNameInput(normalizedReaderName);
+    setNameSaved(true);
+    window.setTimeout(() => setNameSaved(false), 2000);
+
+    const params = new URLSearchParams({ code });
+    if (normalizedReaderName) {
+      params.set("name", normalizedReaderName);
+    }
+    router.replace(`/results?${params.toString()}`, { scroll: false });
   }
 
   async function copyChapterList() {
@@ -167,6 +202,11 @@ function ResultsContent() {
         {/* Header */}
         <div className="text-center space-y-3">
           <h1 className="font-hand text-5xl text-gray-900">Your Book</h1>
+          {readerName && (
+            <p className="font-hand text-2xl text-gray-500">
+              Prepared for {readerName}
+            </p>
+          )}
           <p className="font-body text-sm text-gray-400 tracking-wider uppercase">
             110 pages, unique to you
           </p>
@@ -212,6 +252,37 @@ function ResultsContent() {
             </p>
           )}
         </div>
+
+        <form
+          className="no-print mx-auto max-w-sm space-y-3 rounded-xl border-2 border-gray-100 bg-gray-50/50 p-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            saveReaderName();
+          }}
+        >
+          <label htmlFor="reader-name" className="block text-center font-hand text-2xl text-gray-900">
+            Personalize the cover name
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="reader-name"
+              value={nameInput}
+              onChange={(event) => setNameInput(event.target.value)}
+              maxLength={MAX_READER_NAME_LENGTH}
+              placeholder="Reader name"
+              className="min-w-0 flex-1 rounded-lg border-2 border-gray-200 px-3 py-2 font-body text-sm text-gray-700 outline-none focus:border-accent-blue"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-accent-blue px-4 py-2 font-hand text-lg text-white transition-opacity hover:opacity-90"
+            >
+              Save
+            </button>
+          </div>
+          <p className="text-center font-body text-xs text-gray-400" aria-live="polite">
+            {nameSaved ? "Name saved to this results link and download." : "Optional, but useful for personalized print fulfillment."}
+          </p>
+        </form>
 
         {/* Chapters */}
         <div className="space-y-3" aria-live="polite">
