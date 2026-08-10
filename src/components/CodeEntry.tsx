@@ -4,6 +4,21 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 
+const MAX_READER_NAME_LENGTH = 60;
+
+function cleanReaderName(name: string) {
+  return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
+}
+
+function extractReaderNameInput(input: string): string {
+  try {
+    const url = new URL(input.trim(), "https://hyper-reality.local");
+    return cleanReaderName(url.searchParams.get("name") ?? "");
+  } catch {
+    return "";
+  }
+}
+
 /**
  * Inline "Have a code?" widget for the landing page.
  * Expands into a text input on click; accepts a book code or full results URL,
@@ -29,7 +44,14 @@ export default function CodeEntry({
       setError("That doesn't look right — paste a book code or results link like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
       return;
     }
-    router.push(`/results?code=${encodeURIComponent(normalized)}`);
+
+    const params = new URLSearchParams({ code: normalized });
+    const readerName = extractReaderNameInput(code);
+    if (readerName) {
+      params.set("name", readerName);
+    }
+
+    router.push(`/results?${params.toString()}`);
   }
 
   if (!open) {
