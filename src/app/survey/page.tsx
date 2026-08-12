@@ -6,6 +6,7 @@ import { questions } from "@/lib/questions";
 import { questionToSection } from "@/lib/chapters";
 
 const STORAGE_KEY = "hr-survey";
+const MAX_READER_NAME_LENGTH = 60;
 
 const pastelBgs = [
   "hover:bg-blue-50 hover:border-accent-blue",
@@ -18,7 +19,11 @@ const pastelBgs = [
 // questions that don't affect the generated book code.
 const surveyQuestions = questions.slice(0, questionToSection.length);
 
-function loadSaved(): { current: number; answers: Record<number, string> } {
+function cleanReaderName(name: unknown) {
+  return String(name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
+}
+
+function loadSaved(): { current: number; answers: Record<number, string>; readerName: string } {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -29,19 +34,20 @@ function loadSaved(): { current: number; answers: Record<number, string> } {
           return Number.isInteger(index) && index >= 0 && index < surveyQuestions.length && ["A", "B", "C"].includes(String(value));
         })
       ) as Record<number, string>;
+      const readerName = cleanReaderName(parsed.readerName);
       const savedCurrent = Number(parsed.current);
       const current = Number.isInteger(savedCurrent)
         ? Math.min(Math.max(savedCurrent, 0), surveyQuestions.length - 1)
         : 0;
-      return { current, answers };
+      return { current, answers, readerName };
     }
   } catch {}
-  return { current: 0, answers: {} };
+  return { current: 0, answers: {}, readerName: "" };
 }
 
-function save(current: number, answers: Record<number, string>) {
+function save(current: number, answers: Record<number, string>, readerName = "") {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answers }));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answers, readerName }));
   } catch {}
 }
 
@@ -50,6 +56,7 @@ export default function Survey() {
   const [savedSurvey] = useState(() => loadSaved());
   const [current, setCurrent] = useState(savedSurvey.current);
   const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
+  const [readerName] = useState(savedSurvey.readerName);
   const [animating, setAnimating] = useState(false);
   const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -62,7 +69,7 @@ export default function Survey() {
   const progress = ((current) / total) * 100;
 
   // Sync to sessionStorage on change
-  useEffect(() => { save(current, answers); }, [current, answers]);
+  useEffect(() => { save(current, answers, readerName); }, [current, answers, readerName]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -153,6 +160,9 @@ export default function Survey() {
     sessionStorage.removeItem(STORAGE_KEY);
     const params = new URLSearchParams();
     surveyQuestions.forEach((_, index) => params.set(String(index), nextAnswers[index]));
+    if (readerName) {
+      params.set("name", readerName);
+    }
     router.push(`/results?${params.toString()}`);
   }
 

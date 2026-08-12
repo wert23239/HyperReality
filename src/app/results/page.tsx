@@ -172,7 +172,7 @@ function ResultsContent() {
     const answers = getAnswersFromBookCode(code);
     if (!answers) return;
 
-    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current: 0, answers }));
+    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current: 0, answers, readerName }));
     router.push("/survey");
   }
 
