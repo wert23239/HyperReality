@@ -27,9 +27,11 @@ function extractReaderNameInput(input: string): string {
 export default function CodeEntry({
   defaultOpen = false,
   initialCode = "",
+  initialReaderName = "",
 }: {
   defaultOpen?: boolean;
   initialCode?: string;
+  initialReaderName?: string;
 }) {
   const router = useRouter();
   const inputId = useId();
@@ -46,7 +48,7 @@ export default function CodeEntry({
     }
 
     const params = new URLSearchParams({ code: normalized });
-    const readerName = extractReaderNameInput(code);
+    const readerName = extractReaderNameInput(code) || cleanReaderName(initialReaderName);
     if (readerName) {
       params.set("name", readerName);
     }
