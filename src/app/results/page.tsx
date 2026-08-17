@@ -48,7 +48,7 @@ function ResultsContent() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
-  const [nameSaved, setNameSaved] = useState(false);
+  const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
 
   // Support direct code param (from "Have a code?" flow) or answer params
   const directCode = searchParams.get("code");
@@ -136,14 +136,22 @@ function ResultsContent() {
     const normalizedReaderName = cleanReaderName(nameInput);
     setReaderName(normalizedReaderName);
     setNameInput(normalizedReaderName);
-    setNameSaved(true);
-    window.setTimeout(() => setNameSaved(false), 2000);
+    setNameStatus(normalizedReaderName ? "saved" : "removed");
+    window.setTimeout(() => setNameStatus("idle"), 2000);
 
     const params = new URLSearchParams({ code });
     if (normalizedReaderName) {
       params.set("name", normalizedReaderName);
     }
     router.replace(`/results?${params.toString()}`, { scroll: false });
+  }
+
+  function clearReaderName() {
+    setNameInput("");
+    setReaderName("");
+    setNameStatus("removed");
+    window.setTimeout(() => setNameStatus("idle"), 2000);
+    router.replace(`/results?${new URLSearchParams({ code }).toString()}`, { scroll: false });
   }
 
   async function copyChapterList() {
@@ -278,9 +286,22 @@ function ResultsContent() {
             >
               Save
             </button>
+            {(readerName || nameInput) && (
+              <button
+                type="button"
+                onClick={clearReaderName}
+                className="rounded-lg border-2 border-gray-200 px-3 py-2 font-hand text-lg text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700"
+              >
+                Clear
+              </button>
+            )}
           </div>
           <p className="text-center font-body text-xs text-gray-400" aria-live="polite">
-            {nameSaved ? "Name saved to this results link and download." : "Optional, but useful for personalized print fulfillment."}
+            {nameStatus === "saved"
+              ? "Name saved to this results link and download."
+              : nameStatus === "removed"
+                ? "Name removed from this results link and download."
+                : "Optional, but useful for personalized print fulfillment."}
           </p>
         </form>
 
