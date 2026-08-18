@@ -126,10 +126,20 @@ function ResultsContent() {
   function getChapterListText() {
     return [
       `Hyper Reality book code: ${code}`,
+      `Results link: ${getResultsLink()}`,
       ...(readerName ? [`Reader name: ${readerName}`] : []),
       "",
       ...chapters.map((ch) => `${ch.key}. ${ch.title}`),
     ].join("\n");
+  }
+
+  function getResultsLink() {
+    const params = new URLSearchParams({ code });
+    if (readerName) {
+      params.set("name", readerName);
+    }
+
+    return `${window.location.origin}/results?${params.toString()}`;
   }
 
   function saveReaderName() {
