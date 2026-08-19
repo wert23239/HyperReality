@@ -76,6 +76,16 @@ function ResultsContent() {
     return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
   }
 
+  function getDownloadFileName() {
+    const nameSlug = readerName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40);
+
+    return `hyper-reality-${nameSlug ? `${nameSlug}-` : ""}${code.toLowerCase()}.txt`;
+  }
+
   useEffect(() => {
     if (!isValid) return;
 
@@ -179,7 +189,7 @@ function ResultsContent() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `hyper-reality-${code.toLowerCase()}.txt`;
+    link.download = getDownloadFileName();
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
