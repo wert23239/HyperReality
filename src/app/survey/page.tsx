@@ -56,7 +56,7 @@ export default function Survey() {
   const [savedSurvey] = useState(() => loadSaved());
   const [current, setCurrent] = useState(savedSurvey.current);
   const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
-  const [readerName] = useState(savedSurvey.readerName);
+  const [readerName, setReaderName] = useState(savedSurvey.readerName);
   const [animating, setAnimating] = useState(false);
   const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -152,6 +152,7 @@ export default function Survey() {
     window.history.replaceState({ surveyQ: 0 }, "");
     setHasSurveyHistory(false);
     setAnswers({});
+    setReaderName("");
     setCurrent(0);
   }
 
