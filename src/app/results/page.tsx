@@ -46,6 +46,7 @@ function ResultsContent() {
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [copyLinkStatus, setCopyLinkStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
@@ -184,6 +185,16 @@ function ResultsContent() {
     }
   }
 
+  async function copyResultsLink() {
+    try {
+      await copyTextToClipboard(getResultsLink());
+      setCopyLinkStatus("copied");
+      window.setTimeout(() => setCopyLinkStatus("idle"), 2000);
+    } catch {
+      setCopyLinkStatus("failed");
+    }
+  }
+
   function downloadChapterList() {
     const blob = new Blob([getChapterListText()], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -261,6 +272,14 @@ function ResultsContent() {
             </button>
             <button
               type="button"
+              onClick={copyResultsLink}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+              aria-live="polite"
+            >
+              {copyLinkStatus === "copied" ? "Copied results link" : "Copy results link"}
+            </button>
+            <button
+              type="button"
               onClick={downloadChapterList}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
             >
@@ -277,6 +296,11 @@ function ResultsContent() {
           {copyStatus === "failed" && (
             <p className="no-print font-body text-xs text-red-400" role="alert">
               Copy failed — try Print / save instead.
+            </p>
+          )}
+          {copyLinkStatus === "failed" && (
+            <p className="no-print font-body text-xs text-red-400" role="alert">
+              Link copy failed — copy the address from your browser instead.
             </p>
           )}
         </div>
