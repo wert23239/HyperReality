@@ -47,6 +47,7 @@ function ResultsContent() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [copyLinkStatus, setCopyLinkStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [copyCodeStatus, setCopyCodeStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
@@ -195,6 +196,16 @@ function ResultsContent() {
     }
   }
 
+  async function copyBookCode() {
+    try {
+      await copyTextToClipboard(code);
+      setCopyCodeStatus("copied");
+      window.setTimeout(() => setCopyCodeStatus("idle"), 2000);
+    } catch {
+      setCopyCodeStatus("failed");
+    }
+  }
+
   function downloadChapterList() {
     const blob = new Blob([getChapterListText()], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -280,6 +291,14 @@ function ResultsContent() {
             </button>
             <button
               type="button"
+              onClick={copyBookCode}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+              aria-live="polite"
+            >
+              {copyCodeStatus === "copied" ? "Copied book code" : "Copy book code"}
+            </button>
+            <button
+              type="button"
               onClick={downloadChapterList}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
             >
@@ -301,6 +320,11 @@ function ResultsContent() {
           {copyLinkStatus === "failed" && (
             <p className="no-print font-body text-xs text-red-400" role="alert">
               Link copy failed — copy the address from your browser instead.
+            </p>
+          )}
+          {copyCodeStatus === "failed" && (
+            <p className="no-print font-body text-xs text-red-400" role="alert">
+              Book code copy failed — select the code above and copy it manually.
             </p>
           )}
         </div>
