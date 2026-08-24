@@ -223,6 +223,18 @@ export default function Survey() {
         <p className="text-xs text-gray-400 mt-2 text-right font-body" aria-live="polite">
           Question {current + 1} of {total}
         </p>
+        {readerName && (
+          <p className="mt-3 text-center font-body text-xs text-gray-400">
+            Prepared for <span className="text-gray-600">{readerName}</span>
+            <button
+              type="button"
+              onClick={() => setReaderName("")}
+              className="ml-2 text-accent-blue underline underline-offset-4 hover:text-blue-700"
+            >
+              Clear name
+            </button>
+          </p>
+        )}
       </div>
 
       {/* Question */}
