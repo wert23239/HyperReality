@@ -48,6 +48,7 @@ function ResultsContent() {
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [copyLinkStatus, setCopyLinkStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [copyCodeStatus, setCopyCodeStatus] = useState<"idle" | "copied" | "failed">("idle");
+  const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied" | "failed">("idle");
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
@@ -206,6 +207,36 @@ function ResultsContent() {
     }
   }
 
+  async function shareResults() {
+    const url = getResultsLink();
+    const title = readerName ? `${readerName}'s Hyper Reality book` : "My Hyper Reality book";
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: `Hyper Reality book code: ${code}`,
+          url,
+        });
+        setShareStatus("shared");
+        window.setTimeout(() => setShareStatus("idle"), 2000);
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    try {
+      await copyTextToClipboard(url);
+      setShareStatus("copied");
+      window.setTimeout(() => setShareStatus("idle"), 2000);
+    } catch {
+      setShareStatus("failed");
+    }
+  }
+
   function downloadChapterList() {
     const blob = new Blob([getChapterListText()], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -291,6 +322,18 @@ function ResultsContent() {
             </button>
             <button
               type="button"
+              onClick={shareResults}
+              className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
+              aria-live="polite"
+            >
+              {shareStatus === "shared"
+                ? "Shared results"
+                : shareStatus === "copied"
+                  ? "Copied share link"
+                  : "Share results"}
+            </button>
+            <button
+              type="button"
               onClick={copyBookCode}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
               aria-live="polite"
@@ -320,6 +363,11 @@ function ResultsContent() {
           {copyLinkStatus === "failed" && (
             <p className="no-print font-body text-xs text-red-400" role="alert">
               Link copy failed — copy the address from your browser instead.
+            </p>
+          )}
+          {shareStatus === "failed" && (
+            <p className="no-print font-body text-xs text-red-400" role="alert">
+              Share failed — copy the results link instead.
             </p>
           )}
           {copyCodeStatus === "failed" && (
