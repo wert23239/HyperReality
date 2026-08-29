@@ -8,6 +8,7 @@ import CodeEntry from "@/components/CodeEntry";
 
 const SURVEY_STORAGE_KEY = "hr-survey";
 const MAX_READER_NAME_LENGTH = 60;
+const STATUS_RESET_DELAY = 2000;
 
 async function copyTextToClipboard(text: string) {
   if (navigator.clipboard?.writeText) {
@@ -160,7 +161,7 @@ function ResultsContent() {
     setReaderName(normalizedReaderName);
     setNameInput(normalizedReaderName);
     setNameStatus(normalizedReaderName ? "saved" : "removed");
-    window.setTimeout(() => setNameStatus("idle"), 2000);
+    window.setTimeout(() => setNameStatus("idle"), STATUS_RESET_DELAY);
 
     const params = new URLSearchParams({ code });
     if (normalizedReaderName) {
@@ -173,7 +174,7 @@ function ResultsContent() {
     setNameInput("");
     setReaderName("");
     setNameStatus("removed");
-    window.setTimeout(() => setNameStatus("idle"), 2000);
+    window.setTimeout(() => setNameStatus("idle"), STATUS_RESET_DELAY);
     router.replace(`/results?${new URLSearchParams({ code }).toString()}`, { scroll: false });
   }
 
@@ -181,9 +182,10 @@ function ResultsContent() {
     try {
       await copyTextToClipboard(getChapterListText());
       setCopyStatus("copied");
-      window.setTimeout(() => setCopyStatus("idle"), 2000);
+      window.setTimeout(() => setCopyStatus("idle"), STATUS_RESET_DELAY);
     } catch {
       setCopyStatus("failed");
+      window.setTimeout(() => setCopyStatus("idle"), STATUS_RESET_DELAY);
     }
   }
 
@@ -191,9 +193,10 @@ function ResultsContent() {
     try {
       await copyTextToClipboard(getResultsLink());
       setCopyLinkStatus("copied");
-      window.setTimeout(() => setCopyLinkStatus("idle"), 2000);
+      window.setTimeout(() => setCopyLinkStatus("idle"), STATUS_RESET_DELAY);
     } catch {
       setCopyLinkStatus("failed");
+      window.setTimeout(() => setCopyLinkStatus("idle"), STATUS_RESET_DELAY);
     }
   }
 
@@ -201,9 +204,10 @@ function ResultsContent() {
     try {
       await copyTextToClipboard(code);
       setCopyCodeStatus("copied");
-      window.setTimeout(() => setCopyCodeStatus("idle"), 2000);
+      window.setTimeout(() => setCopyCodeStatus("idle"), STATUS_RESET_DELAY);
     } catch {
       setCopyCodeStatus("failed");
+      window.setTimeout(() => setCopyCodeStatus("idle"), STATUS_RESET_DELAY);
     }
   }
 
@@ -219,7 +223,7 @@ function ResultsContent() {
           url,
         });
         setShareStatus("shared");
-        window.setTimeout(() => setShareStatus("idle"), 2000);
+        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
         return;
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {
@@ -231,9 +235,10 @@ function ResultsContent() {
     try {
       await copyTextToClipboard(url);
       setShareStatus("copied");
-      window.setTimeout(() => setShareStatus("idle"), 2000);
+      window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
     } catch {
       setShareStatus("failed");
+      window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
     }
   }
 
