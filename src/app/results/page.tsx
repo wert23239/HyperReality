@@ -53,6 +53,8 @@ function ResultsContent() {
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
+  const cleanNameInput = cleanReaderName(nameInput);
+  const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
 
   // Support direct code param (from "Have a code?" flow) or answer params
   const directCode = searchParams.get("code");
@@ -399,6 +401,7 @@ function ResultsContent() {
               onChange={(event) => setNameInput(event.target.value)}
               maxLength={MAX_READER_NAME_LENGTH}
               placeholder="Reader name"
+              aria-describedby="reader-name-help reader-name-count"
               className="min-w-0 flex-1 rounded-lg border-2 border-gray-200 px-3 py-2 font-body text-sm text-gray-700 outline-none focus:border-accent-blue"
             />
             <button
@@ -417,12 +420,15 @@ function ResultsContent() {
               </button>
             )}
           </div>
-          <p className="text-center font-body text-xs text-gray-400" aria-live="polite">
+          <p id="reader-name-help" className="text-center font-body text-xs text-gray-400" aria-live="polite">
             {nameStatus === "saved"
               ? "Name saved to this results link and download."
               : nameStatus === "removed"
                 ? "Name removed from this results link and download."
                 : "Optional, but useful for personalized print fulfillment."}
+          </p>
+          <p id="reader-name-count" className="text-center font-body text-[11px] text-gray-300">
+            {nameCharactersRemaining} characters remaining
           </p>
         </form>
 
