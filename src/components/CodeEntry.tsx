@@ -13,7 +13,8 @@ function cleanReaderName(name: string) {
 function extractReaderNameInput(input: string): string {
   try {
     const url = new URL(input.trim(), "https://hyper-reality.local");
-    return cleanReaderName(url.searchParams.get("name") ?? "");
+    const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
+    return cleanReaderName(url.searchParams.get("name") ?? hashParams.get("name") ?? "");
   } catch {
     return "";
   }
