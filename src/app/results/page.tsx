@@ -44,6 +44,7 @@ async function copyTextToClipboard(text: string) {
 function ResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [hashParams, setHashParams] = useState<URLSearchParams | null>(null);
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
@@ -57,7 +58,7 @@ function ResultsContent() {
   const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
 
   // Support direct code param (from "Have a code?" flow) or answer params
-  const directCode = searchParams.get("code");
+  const directCode = searchParams.get("code") ?? hashParams?.get("code");
   let code: string;
   if (directCode) {
     code = normalizeBookCode(directCode);
@@ -76,7 +77,7 @@ function ResultsContent() {
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
-  const readerNameParam = searchParams.get("name") ?? "";
+  const readerNameParam = searchParams.get("name") ?? hashParams?.get("name") ?? "";
 
   function cleanReaderName(name: string) {
     return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
@@ -91,6 +92,17 @@ function ResultsContent() {
 
     return `hyper-reality-${nameSlug ? `${nameSlug}-` : ""}${code.toLowerCase()}.txt`;
   }
+
+  useEffect(() => {
+    const readHashParams = () => {
+      const hashQuery = window.location.hash.split("?")[1] ?? "";
+      setHashParams(hashQuery ? new URLSearchParams(hashQuery) : null);
+    };
+
+    readHashParams();
+    window.addEventListener("hashchange", readHashParams);
+    return () => window.removeEventListener("hashchange", readHashParams);
+  }, []);
 
   useEffect(() => {
     if (!isValid) return;
