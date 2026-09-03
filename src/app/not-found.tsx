@@ -23,9 +23,12 @@ export default function NotFound() {
           >
             Return to Reality
           </Link>
-          <p className="text-xs text-gray-300 font-body">
+          <Link
+            href="/survey"
+            className="inline-block text-xs text-gray-300 font-body underline underline-offset-4 hover:text-gray-500 transition-colors"
+          >
             or take the survey and find your version
-          </p>
+          </Link>
         </div>
       </div>
     </main>
