@@ -1,37 +1,75 @@
 import Link from "next/link";
 import HDiagram from "@/components/HDiagram";
 import Dice from "@/components/Dice";
+import FadeIn from "@/components/FadeIn";
+import CodeEntry from "@/components/CodeEntry";
+import ResumeSurveyHint from "@/components/ResumeSurveyHint";
 
+/** Number of unique book versions: 3 variants ^ 8 variable sections = 6,561 */
+const UNIQUE_VERSIONS = Math.pow(3, 8);
+
+/**
+ * Home page — landing for Hyper Reality book site.
+ * Shows H-Diagram, title, tagline, dice logo, version stats, and survey CTA.
+ */
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
       <div className="max-w-lg w-full space-y-12 text-center">
         {/* H-Diagram */}
-        <HDiagram />
+        <FadeIn delay={0}>
+          <HDiagram />
+        </FadeIn>
 
         {/* Title */}
-        <div className="space-y-3">
-          <h1 className="font-hand text-6xl md:text-7xl font-bold tracking-tight text-gray-900">
-            Hyper Reality
-          </h1>
-          <p className="font-hand text-xl md:text-2xl text-gray-500">
-            The Mysterious Death of Alex Lambert 2
+        <FadeIn delay={200}>
+          <div className="space-y-3">
+            <h1 className="font-hand text-6xl md:text-7xl font-bold tracking-tight text-gray-900">
+              Hyper Reality
+            </h1>
+            <p className="font-hand text-xl md:text-2xl text-gray-500">
+              The Mysterious Death of Alex Lambert 2
+            </p>
+            <p className="text-sm tracking-widest uppercase text-accent-warm mt-4">
+              A book unique to YOU
+            </p>
+          </div>
+        </FadeIn>
+
+        {/* Tagline */}
+        <FadeIn delay={400}>
+          <p className="font-hand text-lg text-gray-400 italic">
+            a cockroach vs. a king?
           </p>
-          <p className="text-sm tracking-widest uppercase text-accent-warm mt-4">
-            A book unique to YOU
-          </p>
-        </div>
+        </FadeIn>
 
         {/* Dice */}
-        <Dice />
+        <FadeIn delay={600}>
+          <Dice />
+        </FadeIn>
+
+        {/* Stats */}
+        <FadeIn delay={800}>
+          <p className="text-xs text-gray-400">
+            {UNIQUE_VERSIONS.toLocaleString()} unique versions — no two books are the same
+          </p>
+        </FadeIn>
 
         {/* CTA */}
-        <Link
-          href="/survey"
-          className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300"
-        >
-          Take the Survey
-        </Link>
+        <FadeIn delay={1000}>
+          <div className="space-y-4">
+            <Link
+              href="/survey"
+              className="inline-block border-2 border-accent-blue text-accent-blue px-8 py-3 rounded-full font-hand text-2xl hover:bg-accent-blue hover:text-white transition-all duration-300 hover:scale-105"
+            >
+              Take the Survey
+            </Link>
+            <ResumeSurveyHint />
+            <div>
+              <CodeEntry />
+            </div>
+          </div>
+        </FadeIn>
       </div>
     </main>
   );

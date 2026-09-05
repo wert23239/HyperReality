@@ -53,9 +53,90 @@ export function buildBookCode(answers: Record<number, string>): string {
   return parts.join("-");
 }
 
+const expectedCodeParts = [
+  /^1[ABC]$/,
+  /^2[ABC]$/,
+  /^3[ABC]$/,
+  /^4$/,
+  /^5$/,
+  /^6[ABC]$/,
+  /^7[ABC]$/,
+  /^8[ABC]$/,
+  /^9[ABC]$/,
+  /^10[ABC]$/,
+  /^11$/,
+];
+
+export function extractBookCodeInput(input: string): string {
+  const trimmed = input.trim();
+
+  try {
+    const url = new URL(trimmed, "https://hyper-reality.local");
+    const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
+    return url.searchParams.get("code") ?? hashParams.get("code") ?? trimmed;
+  } catch {
+    return trimmed;
+  }
+}
+
+export function normalizeBookCode(code: string): string {
+  const cleaned = extractBookCodeInput(code)
+    .trim()
+    .toUpperCase()
+    .replace(/[–—−]/g, "-")
+    .replace(/\s*-\s*/g, "-");
+
+  const compact = cleaned.replace(/[^A-Z0-9]/g, "");
+  const parts: string[] = [];
+  let cursor = 0;
+
+  for (let section = 1; section <= 11; section++) {
+    const sectionText = String(section);
+    if (!compact.startsWith(sectionText, cursor)) {
+      return cleaned.replace(/\s+/g, "");
+    }
+
+    cursor += sectionText.length;
+    if (fixedSections.includes(section)) {
+      parts.push(sectionText);
+    } else {
+      const variant = compact[cursor];
+      if (!variant || !/[ABC]/.test(variant)) {
+        return cleaned.replace(/\s+/g, "");
+      }
+      cursor += 1;
+      parts.push(`${sectionText}${variant}`);
+    }
+  }
+
+  return cursor === compact.length ? parts.join("-") : cleaned.replace(/\s+/g, "");
+}
+
+export function isValidBookCode(code: string): boolean {
+  const normalized = normalizeBookCode(code);
+  const parts = normalized.split("-");
+  if (parts.length !== 11) return false;
+
+  return parts.every((part, index) => (
+    expectedCodeParts[index].test(part) && Boolean(chapterMap[part])
+  ));
+}
+
 export function getChaptersFromCode(code: string): { key: string; title: string }[] {
-  return code.split("-").map((part) => ({
+  return normalizeBookCode(code).split("-").map((part) => ({
     key: part,
     title: chapterMap[part] || "Unknown",
   }));
+}
+
+export function getAnswersFromBookCode(code: string): Record<number, string> | null {
+  const normalized = normalizeBookCode(code);
+  if (!isValidBookCode(normalized)) return null;
+
+  const parts = normalized.split("-");
+  return questionToSection.reduce<Record<number, string>>((answers, section, questionIndex) => {
+    const sectionCode = parts[section - 1];
+    answers[questionIndex] = sectionCode.slice(String(section).length);
+    return answers;
+  }, {});
 }
