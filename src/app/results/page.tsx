@@ -140,6 +140,10 @@ function ResultsContent() {
   }, []);
 
   useEffect(() => {
+    setRevealed(reducedMotion ? chapters.length : 0);
+  }, [code, chapters.length, reducedMotion]);
+
+  useEffect(() => {
     if (reducedMotion) {
       setRevealed(chapters.length);
       return;
