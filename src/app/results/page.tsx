@@ -10,6 +10,13 @@ const SURVEY_STORAGE_KEY = "hr-survey";
 const MAX_READER_NAME_LENGTH = 60;
 const STATUS_RESET_DELAY = 2000;
 
+function getHashSearchParams() {
+  if (typeof window === "undefined") return null;
+
+  const hashQuery = window.location.hash.split("?")[1] ?? "";
+  return hashQuery ? new URLSearchParams(hashQuery) : null;
+}
+
 async function copyTextToClipboard(text: string) {
   if (navigator.clipboard?.writeText) {
     try {
@@ -44,7 +51,7 @@ async function copyTextToClipboard(text: string) {
 function ResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [hashParams, setHashParams] = useState<URLSearchParams | null>(null);
+  const [hashParams, setHashParams] = useState<URLSearchParams | null>(() => getHashSearchParams());
   const [revealed, setRevealed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
@@ -95,8 +102,7 @@ function ResultsContent() {
 
   useEffect(() => {
     const readHashParams = () => {
-      const hashQuery = window.location.hash.split("?")[1] ?? "";
-      setHashParams(hashQuery ? new URLSearchParams(hashQuery) : null);
+      setHashParams(getHashSearchParams());
     };
 
     readHashParams();
