@@ -38,6 +38,8 @@ export const chapterMap: Record<string, string> = {
 // Maps question index to section number
 export const questionToSection = [1, 2, 3, 6, 7, 8, 9, 10];
 export const fixedSections = [4, 5, 11];
+const bookCodeCandidatePattern =
+  /1[ABC][\s,.;:/|_–—−-]*2[ABC][\s,.;:/|_–—−-]*3[ABC][\s,.;:/|_–—−-]*4[\s,.;:/|_–—−-]*5[\s,.;:/|_–—−-]*6[ABC][\s,.;:/|_–—−-]*7[ABC][\s,.;:/|_–—−-]*8[ABC][\s,.;:/|_–—−-]*9[ABC][\s,.;:/|_–—−-]*10[ABC][\s,.;:/|_–—−-]*11/i;
 
 export function buildBookCode(answers: Record<number, string>): string {
   const parts: string[] = [];
@@ -73,10 +75,13 @@ export function extractBookCodeInput(input: string): string {
   try {
     const url = new URL(trimmed, "https://hyper-reality.local");
     const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
-    return url.searchParams.get("code") ?? hashParams.get("code") ?? trimmed;
+    const urlCode = url.searchParams.get("code") ?? hashParams.get("code");
+    if (urlCode) return urlCode;
   } catch {
-    return trimmed;
+    // Fall through to embedded-code extraction for arbitrary pasted text.
   }
+
+  return trimmed.match(bookCodeCandidatePattern)?.[0] ?? trimmed;
 }
 
 export function normalizeBookCode(code: string): string {
