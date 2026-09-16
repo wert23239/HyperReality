@@ -11,12 +11,16 @@ function cleanReaderName(name: string) {
 }
 
 function extractReaderNameInput(input: string): string {
+  const trimmed = input.trim();
+  const embeddedResultsLink = trimmed.match(/https?:\/\/\S*\/results\?\S+/i)?.[0];
+  const readerNameLine = trimmed.match(/^Reader name:\s*(.+)$/im)?.[1];
+
   try {
-    const url = new URL(input.trim(), "https://hyper-reality.local");
+    const url = new URL(embeddedResultsLink ?? trimmed, "https://hyper-reality.local");
     const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
     return cleanReaderName(url.searchParams.get("name") ?? hashParams.get("name") ?? "");
   } catch {
-    return "";
+    return cleanReaderName(readerNameLine ?? "");
   }
 }
 
