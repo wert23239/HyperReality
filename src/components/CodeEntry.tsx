@@ -10,13 +10,21 @@ function cleanReaderName(name: string) {
   return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
 }
 
+function cleanSharedLink(input: string) {
+  return input
+    .trim()
+    .replace(/^<(.+)>$/, "$1")
+    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1")
+    .replace(/[)>.,\]]+$/, "");
+}
+
 function extractReaderNameInput(input: string): string {
-  const trimmed = input.trim();
-  const embeddedResultsLink = trimmed.match(/https?:\/\/\S*\/results\?\S+/i)?.[0];
+  const trimmed = cleanSharedLink(input);
+  const embeddedResultsLink = trimmed.match(/https?:\/\/[^\s<>)\]]*\/results\?[^\s<>)\]]+/i)?.[0];
   const readerNameLine = trimmed.match(/^Reader name:\s*(.+)$/im)?.[1];
 
   try {
-    const url = new URL(embeddedResultsLink ?? trimmed, "https://hyper-reality.local");
+    const url = new URL(cleanSharedLink(embeddedResultsLink ?? trimmed), "https://hyper-reality.local");
     const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
     return cleanReaderName(url.searchParams.get("name") ?? hashParams.get("name") ?? "");
   } catch {
