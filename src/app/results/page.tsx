@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
+import { questions } from "@/lib/questions";
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
@@ -85,6 +86,15 @@ function ResultsContent() {
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
   const readerNameParam = searchParams.get("name") ?? hashParams?.get("name") ?? "";
+  const answerRecap = isValid
+    ? Object.entries(getAnswersFromBookCode(code) ?? {}).map(([questionIndex, value]) => {
+        const question = questions[Number(questionIndex)];
+        const option = question?.options.find((candidate) => candidate.value === value);
+        return question && option
+          ? { question: question.text, label: option.label, answer: option.text }
+          : null;
+      }).filter((item): item is { question: string; label: string; answer: string } => Boolean(item))
+    : [];
 
   function cleanReaderName(name: string) {
     return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
@@ -453,6 +463,26 @@ function ResultsContent() {
             {nameCharactersRemaining} characters remaining
           </p>
         </form>
+
+        {answerRecap.length > 0 && (
+          <details className="no-print rounded-xl border-2 border-gray-100 bg-gray-50/50 p-4">
+            <summary className="cursor-pointer text-center font-hand text-2xl text-gray-900">
+              Review your answers
+            </summary>
+            <ol className="mt-4 space-y-3">
+              {answerRecap.map((item, index) => (
+                <li key={item.question} className="font-body text-sm text-gray-600">
+                  <p className="text-gray-400">
+                    {index + 1}. {item.question}
+                  </p>
+                  <p className="mt-1 text-gray-700">
+                    <span className="font-hand text-accent-blue">{item.label})</span> {item.answer}
+                  </p>
+                </li>
+              ))}
+            </ol>
+          </details>
+        )}
 
         {/* Chapters */}
         <div className="space-y-3" aria-live="polite">
