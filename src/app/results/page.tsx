@@ -177,6 +177,13 @@ function ResultsContent() {
       `Results link: ${getResultsLink()}`,
       ...(readerName ? [`Reader name: ${readerName}`] : []),
       "",
+      ...(answerRecap.length > 0
+        ? [
+            "Answer recap:",
+            ...answerRecap.map((item, index) => `${index + 1}. ${item.question} ${item.label}) ${item.answer}`),
+            "",
+          ]
+        : []),
       ...chapters.map((ch) => `${ch.key}. ${ch.title}`),
     ].join("\n");
   }
