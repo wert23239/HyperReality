@@ -91,9 +91,9 @@ function ResultsContent() {
         const question = questions[Number(questionIndex)];
         const option = question?.options.find((candidate) => candidate.value === value);
         return question && option
-          ? { question: question.text, label: option.label, answer: option.text }
+          ? { index: Number(questionIndex), question: question.text, label: option.label, answer: option.text }
           : null;
-      }).filter((item): item is { question: string; label: string; answer: string } => Boolean(item))
+      }).filter((item): item is { index: number; question: string; label: string; answer: string } => Boolean(item))
     : [];
 
   function cleanReaderName(name: string) {
@@ -295,11 +295,12 @@ function ResultsContent() {
     URL.revokeObjectURL(url);
   }
 
-  function reviseAnswers() {
+  function reviseAnswers(startAt = 0) {
     const answers = getAnswersFromBookCode(code);
     if (!answers) return;
 
-    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current: 0, answers, readerName }));
+    const current = Math.min(Math.max(startAt, 0), answerRecap.length - 1);
+    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current, answers, readerName }));
     router.push("/survey");
   }
 
@@ -395,7 +396,7 @@ function ResultsContent() {
             </button>
             <button
               type="button"
-              onClick={reviseAnswers}
+              onClick={() => reviseAnswers()}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
             >
               Revise answers
@@ -482,9 +483,18 @@ function ResultsContent() {
                   <p className="text-gray-400">
                     {index + 1}. {item.question}
                   </p>
-                  <p className="mt-1 text-gray-700">
-                    <span className="font-hand text-accent-blue">{item.label})</span> {item.answer}
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <p className="text-gray-700">
+                      <span className="font-hand text-accent-blue">{item.label})</span> {item.answer}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => reviseAnswers(item.index)}
+                      className="font-body text-xs text-gray-400 underline underline-offset-4 transition-colors hover:text-gray-600"
+                    >
+                      Edit this answer
+                    </button>
+                  </div>
                 </li>
               ))}
             </ol>
