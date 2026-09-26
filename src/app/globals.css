@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
-
 body {
   background: #ffffff;
   color: #1a1a1a;
@@ -11,4 +9,35 @@ body {
 
 ::selection {
   background: #6B8DAE33;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .chapter-row {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  main {
+    min-height: auto !important;
+    padding: 2rem !important;
+  }
 }
