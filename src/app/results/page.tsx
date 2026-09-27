@@ -73,13 +73,14 @@ function ResultsContent() {
   } else {
     const answers: Record<number, string> = {};
     searchParams.forEach((v, k) => {
-      const idx = parseInt(k);
-      if (!isNaN(idx)) answers[idx] = v;
+      const idx = Number(k);
+      const value = v.trim().toUpperCase();
+      if (Number.isInteger(idx) && idx >= 0 && idx < questionToSection.length && ["A", "B", "C"].includes(value)) {
+        answers[idx] = value;
+      }
     });
 
-    const hasAllSurveyAnswers = questionToSection.every((_, i) => (
-      ["A", "B", "C"].includes(answers[i])
-    ));
+    const hasAllSurveyAnswers = questionToSection.every((_, i) => Boolean(answers[i]));
 
     code = hasAllSurveyAnswers ? buildBookCode(answers) : "";
   }
