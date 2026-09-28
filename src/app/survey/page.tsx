@@ -23,7 +23,7 @@ function cleanReaderName(name: unknown) {
   return String(name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
 }
 
-function loadSaved(): { current: number; answers: Record<number, string>; readerName: string } {
+function loadSaved(): { current: number; answers: Record<number, string>; readerName: string; returnToResultsAfterEdit: boolean } {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -39,15 +39,15 @@ function loadSaved(): { current: number; answers: Record<number, string>; reader
       const current = Number.isInteger(savedCurrent)
         ? Math.min(Math.max(savedCurrent, 0), surveyQuestions.length - 1)
         : 0;
-      return { current, answers, readerName };
+      return { current, answers, readerName, returnToResultsAfterEdit: parsed.returnToResultsAfterEdit === true };
     }
   } catch {}
-  return { current: 0, answers: {}, readerName: "" };
+  return { current: 0, answers: {}, readerName: "", returnToResultsAfterEdit: false };
 }
 
-function save(current: number, answers: Record<number, string>, readerName = "") {
+function save(current: number, answers: Record<number, string>, readerName = "", returnToResultsAfterEdit = false) {
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answers, readerName }));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ current, answers, readerName, returnToResultsAfterEdit }));
   } catch {}
 }
 
@@ -57,6 +57,7 @@ export default function Survey() {
   const [current, setCurrent] = useState(savedSurvey.current);
   const [answers, setAnswers] = useState<Record<number, string>>(savedSurvey.answers);
   const [readerName, setReaderName] = useState(savedSurvey.readerName);
+  const [returnToResultsAfterEdit, setReturnToResultsAfterEdit] = useState(savedSurvey.returnToResultsAfterEdit);
   const [animating, setAnimating] = useState(false);
   const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -69,7 +70,7 @@ export default function Survey() {
   const progress = ((current) / total) * 100;
 
   // Sync to sessionStorage on change
-  useEffect(() => { save(current, answers, readerName); }, [current, answers, readerName]);
+  useEffect(() => { save(current, answers, readerName, returnToResultsAfterEdit); }, [current, answers, readerName, returnToResultsAfterEdit]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -153,6 +154,7 @@ export default function Survey() {
     setHasSurveyHistory(false);
     setAnswers({});
     setReaderName("");
+    setReturnToResultsAfterEdit(false);
     setCurrent(0);
   }
 
@@ -174,6 +176,11 @@ export default function Survey() {
     setAnswers(next);
 
     const advance = () => {
+      if (returnToResultsAfterEdit && allAnswersComplete) {
+        goToResults(next);
+        return;
+      }
+
       if (current < total - 1) {
         const nextQ = current + 1;
         window.history.pushState({ surveyQ: nextQ }, "");

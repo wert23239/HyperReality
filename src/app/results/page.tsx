@@ -296,12 +296,13 @@ function ResultsContent() {
     URL.revokeObjectURL(url);
   }
 
-  function reviseAnswers(startAt = 0) {
+  function reviseAnswers(startAt?: number) {
     const answers = getAnswersFromBookCode(code);
     if (!answers) return;
 
-    const current = Math.min(Math.max(startAt, 0), answerRecap.length - 1);
-    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current, answers, readerName }));
+    const isFocusedEdit = typeof startAt === "number";
+    const current = Math.min(Math.max(startAt ?? 0, 0), answerRecap.length - 1);
+    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current, answers, readerName, returnToResultsAfterEdit: isFocusedEdit }));
     router.push("/survey");
   }
 
