@@ -10,6 +10,7 @@ import CodeEntry from "@/components/CodeEntry";
 const SURVEY_STORAGE_KEY = "hr-survey";
 const MAX_READER_NAME_LENGTH = 60;
 const STATUS_RESET_DELAY = 2000;
+const UNIQUE_VERSIONS = Math.pow(3, questionToSection.length);
 
 function getHashSearchParams() {
   if (typeof window === "undefined") return null;
@@ -49,6 +50,17 @@ async function copyTextToClipboard(text: string) {
   }
 }
 
+function getVersionNumberFromCode(code: string) {
+  const answers = getAnswersFromBookCode(code);
+  if (!answers) return null;
+
+  return questionToSection.reduce((versionIndex, _, questionIndex) => {
+    const answer = answers[questionIndex];
+    const variantIndex = answer === "C" ? 2 : answer === "B" ? 1 : 0;
+    return versionIndex * 3 + variantIndex;
+  }, 0) + 1;
+}
+
 function ResultsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -86,6 +98,7 @@ function ResultsContent() {
   }
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
+  const versionNumber = isValid ? getVersionNumberFromCode(code) : null;
   const readerNameParam = searchParams.get("name") ?? hashParams?.get("name") ?? "";
   const answerRecap = isValid
     ? Object.entries(getAnswersFromBookCode(code) ?? {}).map(([questionIndex, value]) => {
@@ -175,6 +188,7 @@ function ResultsContent() {
   function getChapterListText() {
     return [
       `Hyper Reality book code: ${code}`,
+      ...(versionNumber ? [`Version: ${versionNumber.toLocaleString()} of ${UNIQUE_VERSIONS.toLocaleString()}`] : []),
       `Results link: ${getResultsLink()}`,
       ...(readerName ? [`Reader name: ${readerName}`] : []),
       "",
@@ -340,6 +354,11 @@ function ResultsContent() {
           <p className="font-body text-sm text-gray-400 tracking-wider uppercase">
             110 pages, unique to you
           </p>
+          {versionNumber && (
+            <p className="font-body text-xs text-gray-400">
+              Version {versionNumber.toLocaleString()} of {UNIQUE_VERSIONS.toLocaleString()}
+            </p>
+          )}
         </div>
 
         {/* Code */}
