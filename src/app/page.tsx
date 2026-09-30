@@ -4,6 +4,7 @@ import Dice from "@/components/Dice";
 import FadeIn from "@/components/FadeIn";
 import CodeEntry from "@/components/CodeEntry";
 import ResumeSurveyHint from "@/components/ResumeSurveyHint";
+import LastResultHint from "@/components/LastResultHint";
 
 /** Number of unique book versions: 3 variants ^ 8 variable sections = 6,561 */
 const UNIQUE_VERSIONS = Math.pow(3, 8);
@@ -65,6 +66,7 @@ export default function Home() {
               Take the Survey
             </Link>
             <ResumeSurveyHint />
+            <LastResultHint />
             <div>
               <CodeEntry />
             </div>

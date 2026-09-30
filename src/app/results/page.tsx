@@ -8,6 +8,7 @@ import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
 const SURVEY_STORAGE_KEY = "hr-survey";
+const LAST_RESULT_STORAGE_KEY = "hr-last-result";
 const MAX_READER_NAME_LENGTH = 60;
 const STATUS_RESET_DELAY = 2000;
 const UNIQUE_VERSIONS = Math.pow(3, questionToSection.length);
@@ -157,8 +158,15 @@ function ResultsContent() {
   useEffect(() => {
     if (isValid) {
       sessionStorage.removeItem(SURVEY_STORAGE_KEY);
+      try {
+        localStorage.setItem(LAST_RESULT_STORAGE_KEY, JSON.stringify({
+          code,
+          readerName: cleanReaderName(readerNameParam),
+          updatedAt: new Date().toISOString(),
+        }));
+      } catch {}
     }
-  }, [isValid]);
+  }, [code, isValid, readerNameParam]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
