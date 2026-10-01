@@ -328,6 +328,15 @@ function ResultsContent() {
     router.push("/survey");
   }
 
+  function startOver() {
+    try {
+      sessionStorage.removeItem(SURVEY_STORAGE_KEY);
+      localStorage.removeItem(LAST_RESULT_STORAGE_KEY);
+    } catch {}
+
+    router.push("/");
+  }
+
   if (!isValid) {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
@@ -592,9 +601,13 @@ function ResultsContent() {
 
         {/* Back */}
         <div className="no-print text-center pt-4">
-          <Link href="/" className="font-hand text-lg text-gray-400 hover:text-gray-600 transition-colors">
+          <button
+            type="button"
+            onClick={startOver}
+            className="font-hand text-lg text-gray-400 hover:text-gray-600 transition-colors"
+          >
             ← Start over
-          </Link>
+          </button>
         </div>
       </div>
     </main>
