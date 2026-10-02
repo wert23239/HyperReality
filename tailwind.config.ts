@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        hand: ["Caveat", "cursive"],
-        body: ["Inter", "sans-serif"],
+        hand: ["var(--font-hand)", "cursive"],
+        body: ["var(--font-body)", "sans-serif"],
       },
       colors: {
         accent: {
