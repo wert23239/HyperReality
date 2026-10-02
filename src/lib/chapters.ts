@@ -146,3 +146,14 @@ export function getAnswersFromBookCode(code: string): Record<number, string> | n
     return answers;
   }, {});
 }
+
+export function getVersionNumberFromCode(code: string): number | null {
+  const answers = getAnswersFromBookCode(code);
+  if (!answers) return null;
+
+  return questionToSection.reduce((versionIndex, _, questionIndex) => {
+    const answer = answers[questionIndex];
+    const variantIndex = answer === "C" ? 2 : answer === "B" ? 1 : 0;
+    return versionIndex * 3 + variantIndex;
+  }, 0) + 1;
+}

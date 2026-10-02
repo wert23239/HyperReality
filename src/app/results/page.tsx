@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
+import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, getVersionNumberFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import { questions } from "@/lib/questions";
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
@@ -49,17 +49,6 @@ async function copyTextToClipboard(text: string) {
   } finally {
     document.body.removeChild(textarea);
   }
-}
-
-function getVersionNumberFromCode(code: string) {
-  const answers = getAnswersFromBookCode(code);
-  if (!answers) return null;
-
-  return questionToSection.reduce((versionIndex, _, questionIndex) => {
-    const answer = answers[questionIndex];
-    const variantIndex = answer === "C" ? 2 : answer === "B" ? 1 : 0;
-    return versionIndex * 3 + variantIndex;
-  }, 0) + 1;
 }
 
 function ResultsContent() {

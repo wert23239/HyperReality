@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
+import { getVersionNumberFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 
 const LAST_RESULT_STORAGE_KEY = "hr-last-result";
 const MAX_READER_NAME_LENGTH = 60;
+const UNIQUE_VERSIONS = Math.pow(3, questionToSection.length);
 
 type LastResult = {
   code?: unknown;
@@ -16,7 +17,7 @@ function cleanReaderName(name: unknown) {
   return String(name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
 }
 
-function getLastResultLink(saved: LastResult): { href: string; code: string; readerName: string } | null {
+function getLastResultLink(saved: LastResult): { href: string; code: string; readerName: string; versionNumber: number | null } | null {
   const code = normalizeBookCode(String(saved.code ?? ""));
   if (!isValidBookCode(code)) return null;
 
@@ -26,11 +27,11 @@ function getLastResultLink(saved: LastResult): { href: string; code: string; rea
     params.set("name", readerName);
   }
 
-  return { href: `/results?${params.toString()}`, code, readerName };
+  return { href: `/results?${params.toString()}`, code, readerName, versionNumber: getVersionNumberFromCode(code) };
 }
 
 export default function LastResultHint() {
-  const [lastResult, setLastResult] = useState<{ href: string; code: string; readerName: string } | null>(null);
+  const [lastResult, setLastResult] = useState<{ href: string; code: string; readerName: string; versionNumber: number | null } | null>(null);
 
   useEffect(() => {
     try {
@@ -59,6 +60,11 @@ export default function LastResultHint() {
       <Link href={lastResult.href} className="text-accent-blue underline underline-offset-4 hover:text-blue-700">
         Reopen {lastResult.readerName ? `${lastResult.readerName}'s book` : lastResult.code}
       </Link>
+      {lastResult.versionNumber && (
+        <span className="ml-2 text-gray-300">
+          version {lastResult.versionNumber.toLocaleString()} of {UNIQUE_VERSIONS.toLocaleString()}
+        </span>
+      )}
       <span className="mx-2 text-gray-300">/</span>
       <button
         type="button"
