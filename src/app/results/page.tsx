@@ -66,15 +66,21 @@ function ResultsContent() {
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
   const cleanNameInput = cleanReaderName(nameInput);
   const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
+  const effectiveSearchParams = new URLSearchParams(searchParams.toString());
+  hashParams?.forEach((value, key) => {
+    if (!effectiveSearchParams.has(key)) {
+      effectiveSearchParams.set(key, value);
+    }
+  });
 
   // Support direct code param (from "Have a code?" flow) or answer params
-  const directCode = searchParams.get("code") ?? hashParams?.get("code");
+  const directCode = effectiveSearchParams.get("code");
   let code: string;
   if (directCode) {
     code = normalizeBookCode(directCode);
   } else {
     const answers: Record<number, string> = {};
-    searchParams.forEach((v, k) => {
+    effectiveSearchParams.forEach((v, k) => {
       const idx = Number(k);
       const value = v.trim().toUpperCase();
       if (Number.isInteger(idx) && idx >= 0 && idx < questionToSection.length && ["A", "B", "C"].includes(value)) {
@@ -89,7 +95,7 @@ function ResultsContent() {
   const isValid = isValidBookCode(code);
   const chapters = isValid ? getChaptersFromCode(code) : [];
   const versionNumber = isValid ? getVersionNumberFromCode(code) : null;
-  const readerNameParam = searchParams.get("name") ?? hashParams?.get("name") ?? "";
+  const readerNameParam = effectiveSearchParams.get("name") ?? "";
   const answerRecap = isValid
     ? Object.entries(getAnswersFromBookCode(code) ?? {}).map(([questionIndex, value]) => {
         const question = questions[Number(questionIndex)];
