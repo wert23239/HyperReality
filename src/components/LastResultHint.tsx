@@ -11,13 +11,21 @@ const UNIQUE_VERSIONS = Math.pow(3, questionToSection.length);
 type LastResult = {
   code?: unknown;
   readerName?: unknown;
+  updatedAt?: unknown;
 };
 
 function cleanReaderName(name: unknown) {
   return String(name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
 }
 
-function getLastResultLink(saved: LastResult): { href: string; code: string; readerName: string; versionNumber: number | null } | null {
+function getSavedDateLabel(updatedAt: unknown) {
+  const date = new Date(String(updatedAt ?? ""));
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+}
+
+function getLastResultLink(saved: LastResult): { href: string; code: string; readerName: string; versionNumber: number | null; savedDateLabel: string } | null {
   const code = normalizeBookCode(String(saved.code ?? ""));
   if (!isValidBookCode(code)) return null;
 
@@ -27,11 +35,17 @@ function getLastResultLink(saved: LastResult): { href: string; code: string; rea
     params.set("name", readerName);
   }
 
-  return { href: `/results?${params.toString()}`, code, readerName, versionNumber: getVersionNumberFromCode(code) };
+  return {
+    href: `/results?${params.toString()}`,
+    code,
+    readerName,
+    versionNumber: getVersionNumberFromCode(code),
+    savedDateLabel: getSavedDateLabel(saved.updatedAt),
+  };
 }
 
 export default function LastResultHint() {
-  const [lastResult, setLastResult] = useState<{ href: string; code: string; readerName: string; versionNumber: number | null } | null>(null);
+  const [lastResult, setLastResult] = useState<{ href: string; code: string; readerName: string; versionNumber: number | null; savedDateLabel: string } | null>(null);
 
   useEffect(() => {
     try {
@@ -63,6 +77,11 @@ export default function LastResultHint() {
       {lastResult.versionNumber && (
         <span className="ml-2 text-gray-300">
           version {lastResult.versionNumber.toLocaleString()} of {UNIQUE_VERSIONS.toLocaleString()}
+        </span>
+      )}
+      {lastResult.savedDateLabel && (
+        <span className="ml-2 text-gray-300">
+          saved {lastResult.savedDateLabel}
         </span>
       )}
       <span className="mx-2 text-gray-300">/</span>
