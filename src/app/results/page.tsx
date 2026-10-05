@@ -154,10 +154,15 @@ function ResultsContent() {
     if (isValid) {
       sessionStorage.removeItem(SURVEY_STORAGE_KEY);
       try {
+        const normalizedReaderName = cleanReaderName(readerNameParam);
+        const previousLastResult = JSON.parse(localStorage.getItem(LAST_RESULT_STORAGE_KEY) ?? "null");
+        const previousUpdatedAt = typeof previousLastResult?.updatedAt === "string" ? previousLastResult.updatedAt : "";
+        const isSameResult = previousLastResult?.code === code && cleanReaderName(previousLastResult?.readerName) === normalizedReaderName;
+
         localStorage.setItem(LAST_RESULT_STORAGE_KEY, JSON.stringify({
           code,
-          readerName: cleanReaderName(readerNameParam),
-          updatedAt: new Date().toISOString(),
+          readerName: normalizedReaderName,
+          updatedAt: isSameResult && previousUpdatedAt ? previousUpdatedAt : new Date().toISOString(),
         }));
       } catch {}
     }
