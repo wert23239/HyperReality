@@ -7,13 +7,19 @@ import { questionToSection } from "@/lib/chapters";
 
 const STORAGE_KEY = "hr-survey";
 const TOTAL_SURVEY_QUESTIONS = questionToSection.length;
+const MAX_READER_NAME_LENGTH = 60;
 
 type SavedSurvey = {
   current?: unknown;
   answers?: Record<string, unknown>;
+  readerName?: unknown;
 };
 
-function getResumeQuestion(saved: SavedSurvey): number | null {
+function cleanReaderName(name: unknown) {
+  return String(name ?? "").replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
+}
+
+function getResumeDetails(saved: SavedSurvey): { question: number; readerName: string } | null {
   const current = Number(saved.current);
   if (!Number.isInteger(current) || current < 0 || current >= TOTAL_SURVEY_QUESTIONS) {
     return null;
@@ -25,21 +31,21 @@ function getResumeQuestion(saved: SavedSurvey): number | null {
     return Number.isInteger(index) && index >= 0 && index < TOTAL_SURVEY_QUESTIONS && ["A", "B", "C"].includes(String(value));
   });
 
-  return hasProgress ? current + 1 : null;
+  return hasProgress ? { question: current + 1, readerName: cleanReaderName(saved.readerName) } : null;
 }
 
 export default function ResumeSurveyHint() {
   const router = useRouter();
-  const [resumeQuestion, setResumeQuestion] = useState<number | null>(null);
+  const [resumeDetails, setResumeDetails] = useState<{ question: number; readerName: string } | null>(null);
 
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
-      setResumeQuestion(getResumeQuestion(JSON.parse(raw)));
+      setResumeDetails(getResumeDetails(JSON.parse(raw)));
     } catch {
-      setResumeQuestion(null);
+      setResumeDetails(null);
     }
   }, []);
 
@@ -48,18 +54,23 @@ export default function ResumeSurveyHint() {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {}
 
-    setResumeQuestion(null);
+    setResumeDetails(null);
     router.push("/survey");
   }
 
-  if (!resumeQuestion) return null;
+  if (!resumeDetails) return null;
 
   return (
     <p className="font-body text-xs text-gray-400">
       Saved progress found. {" "}
       <Link href="/survey" className="text-accent-blue underline underline-offset-4 hover:text-blue-700">
-        Resume at question {resumeQuestion} of {TOTAL_SURVEY_QUESTIONS}
+        Resume {resumeDetails.readerName ? `${resumeDetails.readerName}'s book` : `at question ${resumeDetails.question} of ${TOTAL_SURVEY_QUESTIONS}`}
       </Link>
+      {resumeDetails.readerName && (
+        <span className="ml-2 text-gray-300">
+          question {resumeDetails.question} of {TOTAL_SURVEY_QUESTIONS}
+        </span>
+      )}
       <span className="mx-2 text-gray-300">/</span>
       <button
         type="button"
