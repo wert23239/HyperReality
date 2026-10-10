@@ -52,6 +52,7 @@ export default function CodeEntry({
   const [open, setOpen] = useState(defaultOpen);
   const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
+  const [useInitialReaderName, setUseInitialReaderName] = useState(true);
 
   function submit() {
     const normalized = normalizeBookCode(code);
@@ -61,12 +62,18 @@ export default function CodeEntry({
     }
 
     const params = new URLSearchParams({ code: normalized });
-    const readerName = extractReaderNameInput(code) || cleanReaderName(initialReaderName);
+    const readerName = extractReaderNameInput(code) || (useInitialReaderName ? cleanReaderName(initialReaderName) : "");
     if (readerName) {
       params.set("name", readerName);
     }
 
     router.push(`/results?${params.toString()}`);
+  }
+
+  function clearEntry() {
+    setCode("");
+    setError("");
+    setUseInitialReaderName(false);
   }
 
   if (!open) {
@@ -98,7 +105,7 @@ export default function CodeEntry({
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(""); }}
           placeholder="Code or results link"
-          className="flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
+          className="min-w-0 flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
         />
@@ -108,6 +115,15 @@ export default function CodeEntry({
         >
           Go
         </button>
+        {(code || error) && (
+          <button
+            type="button"
+            onClick={clearEntry}
+            className="px-3 py-2 rounded-lg border-2 border-gray-200 text-gray-400 font-hand text-lg hover:border-gray-300 hover:text-gray-600 transition-colors"
+          >
+            Clear
+          </button>
+        )}
       </div>
       {error && <p id={errorId} className="text-xs text-red-400 text-center" role="alert">{error}</p>}
     </form>
