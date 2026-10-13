@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyper Reality — Geometric</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=IBM+Plex+Serif:ital,wght@0,100;0,400;0,700;1,100&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px; height: 800px; overflow: hidden;
+  font-family: 'IBM Plex Serif', serif;
+  background: #fafafa;
+  background-image: radial-gradient(circle, #d0d0d0 1px, transparent 1px);
+  background-size: 24px 24px;
+  position: relative; color: #222;
+  display: flex; align-items: center; justify-content: center;
+}
+.container {
+  display: grid;
+  grid-template-columns: 1fr 480px 1fr;
+  grid-template-rows: auto;
+  gap: 0;
+  width: 100%; height: 100%;
+  align-items: center;
+}
+/* left column */
+.col-left {
+  padding: 60px 40px 60px 80px;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 24px;
+}
+.col-left .pre-title {
+  font-weight: 100; font-size: 13px;
+  letter-spacing: 5px; text-transform: uppercase;
+  color: #999;
+}
+.col-left h1 {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 48px; line-height: 1.1;
+}
+.col-left .subtitle {
+  font-weight: 100; font-size: 16px;
+  font-style: italic; color: #666;
+  border-left: 2px solid #ddd; padding-left: 16px;
+}
+.col-left .tagline {
+  font-family: 'Caveat', cursive; font-size: 28px; color: #c33;
+}
+/* center: H-diagram hero */
+.col-center {
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.col-center svg { width: 480px; height: 520px; }
+/* right column */
+.col-right {
+  padding: 60px 80px 60px 40px;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: flex-end;
+  text-align: right; gap: 28px;
+}
+.dice-group {
+  display: flex; gap: 16px; align-items: center;
+}
+.dice-group svg { opacity: 0.8; }
+.version-block .number {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 56px; line-height: 1;
+}
+.version-block .label {
+  font-weight: 100; font-size: 12px;
+  letter-spacing: 4px; text-transform: uppercase; color: #999;
+}
+.unique {
+  font-family: 'Caveat', cursive; font-size: 22px; color: #666;
+}
+.cta-btn {
+  font-family: 'IBM Plex Serif', serif; font-weight: 100;
+  font-size: 14px; letter-spacing: 3px; text-transform: uppercase;
+  background: #222; color: #fafafa;
+  padding: 16px 40px; border: none; cursor: pointer;
+  transition: background 0.3s;
+}
+.cta-btn:hover { background: #444; }
+/* thin decorative lines */
+.line-top {
+  position: absolute; top: 40px; left: 80px; right: 80px;
+  height: 1px; background: #ddd;
+}
+.line-bottom {
+  position: absolute; bottom: 40px; left: 80px; right: 80px;
+  height: 1px; background: #ddd;
+}
+</style>
+</head>
+<body>
+<div class="line-top"></div>
+<div class="line-bottom"></div>
+<div class="container">
+  <div class="col-left">
+    <div class="pre-title">A Novel Experience</div>
+    <h1>Hyper<br>Reality</h1>
+    <div class="subtitle">The Mysterious Death<br>of Alex Lambert 2</div>
+    <div class="tagline">"a cockroach vs. a king?"</div>
+  </div>
+  <div class="col-center">
+    <svg viewBox="0 0 480 520" fill="none">
+      <!-- H structure with clean geometric lines -->
+      <line x1="120" y1="60" x2="120" y2="460" stroke="#222" stroke-width="2"/>
+      <line x1="360" y1="60" x2="360" y2="460" stroke="#222" stroke-width="2"/>
+      <line x1="120" y1="260" x2="360" y2="260" stroke="#222" stroke-width="2"/>
+      <!-- node circles -->
+      <circle cx="120" cy="60" r="32" fill="#fafafa" stroke="#222" stroke-width="1.5"/>
+      <circle cx="360" cy="60" r="32" fill="#fafafa" stroke="#222" stroke-width="1.5"/>
+      <circle cx="120" cy="460" r="32" fill="#fafafa" stroke="#222" stroke-width="1.5"/>
+      <circle cx="360" cy="460" r="32" fill="#fafafa" stroke="#222" stroke-width="1.5"/>
+      <!-- center marker -->
+      <circle cx="240" cy="260" r="6" fill="#c33"/>
+      <!-- labels -->
+      <text x="120" y="65" text-anchor="middle" font-family="Caveat" font-size="20" fill="#222">Hydrogen</text>
+      <text x="360" y="65" text-anchor="middle" font-family="Caveat" font-size="20" fill="#222">Heaven</text>
+      <text x="120" y="465" text-anchor="middle" font-family="Caveat" font-size="20" fill="#222">Hell</text>
+      <text x="360" y="465" text-anchor="middle" font-family="Caveat" font-size="20" fill="#222">Habit</text>
+    </svg>
+  </div>
+  <div class="col-right">
+    <div class="dice-group">
+      <svg width="40" height="36" viewBox="0 0 40 36"><polygon points="20,2 38,34 2,34" fill="none" stroke="#222" stroke-width="1.5"/></svg>
+      <svg width="36" height="40" viewBox="0 0 36 40"><polygon points="18,2 34,20 18,38 2,20" fill="none" stroke="#222" stroke-width="1.5"/></svg>
+      <svg width="40" height="40" viewBox="0 0 40 40"><polygon points="20,2 38,15 32,36 8,36 2,15" fill="none" stroke="#222" stroke-width="1.5"/></svg>
+    </div>
+    <div class="version-block">
+      <div class="number">6,561</div>
+      <div class="label">Unique Versions</div>
+    </div>
+    <div class="unique">A book unique to YOU</div>
+    <button class="cta-btn">Take the Survey</button>
+  </div>
+</div>
+</body>
+</html>
