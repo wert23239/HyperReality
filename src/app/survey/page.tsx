@@ -51,6 +51,14 @@ function save(current: number, answers: Record<number, string>, readerName = "",
   } catch {}
 }
 
+// Storage can be blocked even when the in-memory survey is usable.
+// Optional persistence must not prevent restarting or viewing results.
+function clearSavedSurvey() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
+
 export default function Survey() {
   const router = useRouter();
   const [savedSurvey] = useState(() => loadSaved());
@@ -149,7 +157,7 @@ export default function Survey() {
       return;
     }
 
-    sessionStorage.removeItem(STORAGE_KEY);
+    clearSavedSurvey();
     window.history.replaceState({ surveyQ: 0 }, "");
     setHasSurveyHistory(false);
     setAnswers({});
@@ -160,7 +168,7 @@ export default function Survey() {
 
   function goToResults(nextAnswers = answers) {
     // Clear saved state and go to results
-    sessionStorage.removeItem(STORAGE_KEY);
+    clearSavedSurvey();
     const params = new URLSearchParams();
     surveyQuestions.forEach((_, index) => params.set(String(index), nextAnswers[index]));
     if (readerName) {
