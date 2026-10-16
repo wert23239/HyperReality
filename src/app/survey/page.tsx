@@ -71,6 +71,16 @@ export default function Survey() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const hasMountedRef = useRef(false);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelTransition = useCallback(() => {
+    if (transitionTimerRef.current !== null) {
+      clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+  }, []);
+
+  // A delayed answer must not navigate after browser Back or leaving the page.
+  useEffect(() => cancelTransition, [cancelTransition]);
 
   const q = surveyQuestions[current];
   const total = surveyQuestions.length;
@@ -108,6 +118,7 @@ export default function Survey() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigateTo = useCallback((q: number) => {
+    cancelTransition();
     if (reducedMotion) {
       setCurrent(q);
       setAnimating(false);
@@ -115,15 +126,18 @@ export default function Survey() {
     }
 
     setAnimating(true);
-    setTimeout(() => {
+    transitionTimerRef.current = setTimeout(() => {
+      transitionTimerRef.current = null;
       setCurrent(q);
       setAnimating(false);
     }, 300);
-  }, [reducedMotion]);
+  }, [reducedMotion, cancelTransition]);
 
   // Listen for browser back/forward
   useEffect(() => {
     function onPop(e: PopStateEvent) {
+      cancelTransition();
+      setAnimating(false);
       const q = e.state?.surveyQ;
       if (typeof q === "number" && q >= 0 && q < total) {
         navigateTo(q);
@@ -131,7 +145,7 @@ export default function Survey() {
     }
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [total, navigateTo]);
+  }, [total, navigateTo, cancelTransition]);
 
   function goBack() {
     if (current === 0 || animating) return;
@@ -184,6 +198,7 @@ export default function Survey() {
     setAnswers(next);
 
     const advance = () => {
+      transitionTimerRef.current = null;
       if (returnToResultsAfterEdit && allAnswersComplete) {
         goToResults(next);
         return;
@@ -213,7 +228,7 @@ export default function Survey() {
     if (reducedMotion) {
       advance();
     } else {
-      setTimeout(advance, 400);
+      transitionTimerRef.current = setTimeout(advance, 400);
     }
   }
 
