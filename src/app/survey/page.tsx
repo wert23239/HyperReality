@@ -67,7 +67,8 @@ export default function Survey() {
   const [readerName, setReaderName] = useState(savedSurvey.readerName);
   const [returnToResultsAfterEdit, setReturnToResultsAfterEdit] = useState(savedSurvey.returnToResultsAfterEdit);
   const [animating, setAnimating] = useState(false);
-  const [hasSurveyHistory, setHasSurveyHistory] = useState(false);
+  // Track each entry's distance from the resume boundary, not whether we ever advanced.
+  const surveyHistoryDepthRef = useRef(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const questionHeadingRef = useRef<HTMLHeadingElement>(null);
   const hasMountedRef = useRef(false);
@@ -112,8 +113,10 @@ export default function Survey() {
   // Push browser history entries per question so back/forward buttons work
   useEffect(() => {
     const initial = window.history.state?.surveyQ;
+    const savedDepth = window.history.state?.surveyDepth;
+    surveyHistoryDepthRef.current = Number.isInteger(savedDepth) && savedDepth >= 0 ? savedDepth : 0;
     if (initial === undefined) {
-      window.history.replaceState({ surveyQ: current }, "");
+      window.history.replaceState({ surveyQ: current, surveyDepth: 0 }, "");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -138,6 +141,8 @@ export default function Survey() {
     function onPop(e: PopStateEvent) {
       cancelTransition();
       setAnimating(false);
+      const depth = e.state?.surveyDepth;
+      surveyHistoryDepthRef.current = Number.isInteger(depth) && depth >= 0 ? depth : 0;
       const q = e.state?.surveyQ;
       if (typeof q === "number" && q >= 0 && q < total) {
         navigateTo(q);
@@ -150,7 +155,7 @@ export default function Survey() {
   function goBack() {
     if (current === 0 || animating) return;
 
-    if (hasSurveyHistory) {
+    if (surveyHistoryDepthRef.current > 0) {
       window.history.back();
       return;
     }
@@ -159,7 +164,7 @@ export default function Survey() {
     // entries, so the visible Back control should still move to the previous
     // question instead of sending the reader away from the survey.
     const previousQ = current - 1;
-    window.history.replaceState({ surveyQ: previousQ }, "");
+    window.history.replaceState({ surveyQ: previousQ, surveyDepth: 0 }, "");
     navigateTo(previousQ);
   }
 
@@ -172,8 +177,8 @@ export default function Survey() {
     }
 
     clearSavedSurvey();
-    window.history.replaceState({ surveyQ: 0 }, "");
-    setHasSurveyHistory(false);
+    window.history.replaceState({ surveyQ: 0, surveyDepth: 0 }, "");
+    surveyHistoryDepthRef.current = 0;
     setAnswers({});
     setReaderName("");
     setReturnToResultsAfterEdit(false);
@@ -206,8 +211,8 @@ export default function Survey() {
 
       if (current < total - 1) {
         const nextQ = current + 1;
-        window.history.pushState({ surveyQ: nextQ }, "");
-        setHasSurveyHistory(true);
+        surveyHistoryDepthRef.current += 1;
+        window.history.pushState({ surveyQ: nextQ, surveyDepth: surveyHistoryDepthRef.current }, "");
         setCurrent(nextQ);
         setAnimating(false);
         return;
@@ -215,8 +220,8 @@ export default function Survey() {
 
       const firstUnanswered = surveyQuestions.findIndex((_, index) => !["A", "B", "C"].includes(next[index]));
       if (firstUnanswered !== -1) {
-        window.history.pushState({ surveyQ: firstUnanswered }, "");
-        setHasSurveyHistory(true);
+        surveyHistoryDepthRef.current += 1;
+        window.history.pushState({ surveyQ: firstUnanswered, surveyDepth: surveyHistoryDepthRef.current }, "");
         setCurrent(firstUnanswered);
         setAnimating(false);
         return;

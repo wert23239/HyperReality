@@ -12,6 +12,21 @@ function mountSurvey(current = 1, reducedMotion = false) {
   const listeners = new Map();
   const pushes = [];
   const routes = [];
+  const entries = [{ surveyQ: current, surveyDepth: 0 }];
+  let historyIndex = 0;
+  let backCalls = 0;
+  const history = {
+    get state() { return entries[historyIndex]; },
+    pushState(state) {
+      pushes.push(state);
+      entries.splice(++historyIndex, Infinity, state);
+    },
+    replaceState(state) { entries[historyIndex] = state; },
+    back() {
+      backCalls++;
+      if (historyIndex > 0) listeners.get('popstate')({ state: entries[--historyIndex] });
+    },
+  };
   let cursor = 0;
   let timerId = 0;
   const answers = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [i, 'A']));
@@ -48,7 +63,7 @@ function mountSurvey(current = 1, reducedMotion = false) {
       setItem() {}, removeItem() {},
     },
     window: {
-      history: { state: { surveyQ: current }, pushState: state => pushes.push(state), replaceState() {} },
+      history,
       matchMedia: () => ({ matches: reducedMotion, addEventListener() {}, removeEventListener() {} }),
       addEventListener: (name, fn) => listeners.set(name, fn),
       removeEventListener: name => listeners.delete(name),
@@ -69,6 +84,20 @@ function mountSurvey(current = 1, reducedMotion = false) {
   }
   return {
     answer: () => findAnswer(tree).props.onClick(),
+    render() {
+      cursor = 0;
+      tree = module.exports.default();
+    },
+    back() {
+      function findBack(node) {
+        if (!node || typeof node !== 'object') return;
+        if (node.type === 'button' && [node.props.children].flat().includes(' Back')) return node;
+        return [node.props?.children].flat(Infinity).map(findBack).find(Boolean);
+      }
+      findBack(tree).props.onClick();
+    },
+    get backCalls() { return backCalls; },
+    history,
     pop: state => listeners.get('popstate')({ state }),
     unmount: () => cleanups.forEach(fn => fn()),
     flush() {
@@ -108,5 +137,31 @@ test('ordinary and reduced-motion answers still advance', () => {
     survey.answer();
     survey.flush();
     assert.equal(survey.pushes[0].surveyQ, 2);
+  }
+});
+
+
+test('Back stays in the survey after returning to the resumed history boundary', () => {
+  for (const reducedMotion of [false, true]) {
+    const survey = mountSurvey(3, reducedMotion);
+    survey.answer();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.history.state.surveyQ, 4);
+
+    survey.back();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.slots[1], 3);
+    assert.equal(survey.backCalls, 1);
+
+    // At the original resume entry, browser Back would leave the survey.
+    survey.back();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.slots[1], 2);
+    assert.equal(survey.history.state.surveyQ, 2);
+    assert.equal(survey.backCalls, 1);
+    assert.equal(survey.routes.length, 0);
   }
 });
