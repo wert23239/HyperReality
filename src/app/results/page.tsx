@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, getVersionNumberFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import { questions } from "@/lib/questions";
+import { rememberLastResult } from "@/lib/last-result";
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
@@ -151,21 +152,13 @@ function ResultsContent() {
   }, [readerNameParam]);
 
   useEffect(() => {
-    if (isValid) {
-      sessionStorage.removeItem(SURVEY_STORAGE_KEY);
-      try {
-        const normalizedReaderName = cleanReaderName(readerNameParam);
-        const previousLastResult = JSON.parse(localStorage.getItem(LAST_RESULT_STORAGE_KEY) ?? "null");
-        const previousUpdatedAt = typeof previousLastResult?.updatedAt === "string" ? previousLastResult.updatedAt : "";
-        const isSameResult = previousLastResult?.code === code && cleanReaderName(previousLastResult?.readerName) === normalizedReaderName;
+    if (!isValid) return;
 
-        localStorage.setItem(LAST_RESULT_STORAGE_KEY, JSON.stringify({
-          code,
-          readerName: normalizedReaderName,
-          updatedAt: isSameResult && previousUpdatedAt ? previousUpdatedAt : new Date().toISOString(),
-        }));
-      } catch {}
-    }
+    // Survey cleanup and remembering a book are independent, optional operations.
+    try {
+      sessionStorage.removeItem(SURVEY_STORAGE_KEY);
+    } catch {}
+    rememberLastResult(code, cleanReaderName(readerNameParam));
   }, [code, isValid, readerNameParam]);
 
   useEffect(() => {
