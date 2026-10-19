@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, getVersionNumberFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import { questions } from "@/lib/questions";
 import { rememberLastResult } from "@/lib/last-result";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import Link from "next/link";
 import CodeEntry from "@/components/CodeEntry";
 
@@ -21,36 +22,6 @@ function getHashSearchParams() {
   return hashQuery ? new URLSearchParams(hashQuery) : null;
 }
 
-async function copyTextToClipboard(text: string) {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return;
-    } catch {
-      // Fall through to the textarea fallback for browsers that expose the
-      // Clipboard API but block it outside secure/user-activated contexts.
-    }
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "fixed";
-  textarea.style.top = "0";
-  textarea.style.left = "0";
-  textarea.style.opacity = "0";
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
-
-  try {
-    if (!document.execCommand("copy")) {
-      throw new Error("Copy command was not accepted");
-    }
-  } finally {
-    document.body.removeChild(textarea);
-  }
-}
 
 function ResultsContent() {
   const router = useRouter();
