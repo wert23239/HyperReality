@@ -82,6 +82,18 @@ function ResultsContent() {
     return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
   }
 
+  // Keep browser tabs, bookmarks, and screen-reader page announcements specific
+  // to the current result, including when another book opens without a reload.
+  useEffect(() => {
+    const previousTitle = document.title;
+    const name = cleanReaderName(readerNameParam);
+    document.title = isValid && versionNumber
+      ? `${name ? `${name}'s book · ` : ""}Version ${versionNumber.toLocaleString()} | Hyper Reality`
+      : "Code not found | Hyper Reality";
+
+    return () => { document.title = previousTitle; };
+  }, [isValid, versionNumber, readerNameParam]);
+
   function getDownloadFileName() {
     const nameSlug = readerName
       .toLowerCase()
