@@ -36,6 +36,7 @@ function ResultsContent() {
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
+  const [reviseFailed, setReviseFailed] = useState(false);
   const cleanNameInput = cleanReaderName(nameInput);
   const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
   const effectiveSearchParams = new URLSearchParams(searchParams.toString());
@@ -300,7 +301,14 @@ function ResultsContent() {
 
     const isFocusedEdit = typeof startAt === "number";
     const current = Math.min(Math.max(startAt ?? 0, 0), answerRecap.length - 1);
-    sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current, answers, readerName, returnToResultsAfterEdit: isFocusedEdit }));
+    try {
+      sessionStorage.setItem(SURVEY_STORAGE_KEY, JSON.stringify({ current, answers, readerName, returnToResultsAfterEdit: isFocusedEdit }));
+    } catch {
+      // Do not open a blank survey when the decoded answers cannot be saved.
+      setReviseFailed(true);
+      return;
+    }
+    setReviseFailed(false);
     router.push("/survey");
   }
 
@@ -434,6 +442,12 @@ function ResultsContent() {
           {copyCodeStatus === "failed" && (
             <p className="no-print font-body text-xs text-red-400" role="alert">
               Book code copy failed — select the code above and copy it manually.
+            </p>
+          )}
+          {reviseFailed && (
+            <p className="no-print font-body text-xs text-red-400" role="alert">
+              Could not open your answers because browser storage is unavailable or full.
+              Enable site storage or free up space, then try again. Your book is unchanged.
             </p>
           )}
         </div>
