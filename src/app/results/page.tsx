@@ -37,6 +37,7 @@ function ResultsContent() {
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
   const [reviseFailed, setReviseFailed] = useState(false);
+  const [siteOrigin, setSiteOrigin] = useState("");
   const cleanNameInput = cleanReaderName(nameInput);
   const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
   const effectiveSearchParams = new URLSearchParams(searchParams.toString());
@@ -82,6 +83,10 @@ function ResultsContent() {
   function cleanReaderName(name: string) {
     return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
   }
+
+  useEffect(() => {
+    setSiteOrigin(window.location.origin);
+  }, []);
 
   // Keep browser tabs, bookmarks, and screen-reader page announcements specific
   // to the current result, including when another book opens without a reload.
@@ -365,6 +370,12 @@ function ResultsContent() {
         {/* Code */}
         <div className="text-center space-y-3">
           <p className="font-hand text-2xl text-accent-blue tracking-wide">{code}</p>
+          {siteOrigin && (
+            <p className="hidden print:block break-words font-body text-xs text-gray-600">
+              Reopen this book:{" "}
+              <a href={getResultsLink()}>{getResultsLink()}</a>
+            </p>
+          )}
           <div className="no-print flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <button
               type="button"
