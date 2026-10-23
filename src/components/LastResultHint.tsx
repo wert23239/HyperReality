@@ -48,14 +48,26 @@ export default function LastResultHint() {
   const [lastResult, setLastResult] = useState<{ href: string; code: string; readerName: string; versionNumber: number | null; savedDateLabel: string } | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(LAST_RESULT_STORAGE_KEY);
-      if (!raw) return;
-
-      setLastResult(getLastResultLink(JSON.parse(raw)));
-    } catch {
-      setLastResult(null);
+    function refreshLastResult() {
+      try {
+        const raw = localStorage.getItem(LAST_RESULT_STORAGE_KEY);
+        setLastResult(raw ? getLastResultLink(JSON.parse(raw)) : null);
+      } catch {
+        setLastResult(null);
+      }
     }
+
+    function onStorage(event: StorageEvent) {
+      // A null key means another tab cleared all local storage.
+      if (event.storageArea === localStorage &&
+          (event.key === LAST_RESULT_STORAGE_KEY || event.key === null)) {
+        refreshLastResult();
+      }
+    }
+
+    refreshLastResult();
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   function clearLastResult() {
