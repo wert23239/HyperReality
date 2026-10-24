@@ -33,6 +33,7 @@ function ResultsContent() {
   const [copyLinkStatus, setCopyLinkStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [copyCodeStatus, setCopyCodeStatus] = useState<"idle" | "copied" | "failed">("idle");
   const [shareStatus, setShareStatus] = useState<"idle" | "shared" | "copied" | "failed">("idle");
+  const [sharing, setSharing] = useState(false);
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
@@ -258,33 +259,39 @@ function ResultsContent() {
   }
 
   async function shareResults() {
-    const url = getResultsLink();
-    const title = readerName ? `${readerName}'s Hyper Reality book` : "My Hyper Reality book";
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const url = getResultsLink();
+      const title = readerName ? `${readerName}'s Hyper Reality book` : "My Hyper Reality book";
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text: `Hyper Reality book code: ${code}`,
-          url,
-        });
-        setShareStatus("shared");
-        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title,
+            text: `Hyper Reality book code: ${code}`,
+            url,
+          });
+          setShareStatus("shared");
+          window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
           return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") {
+            return;
+          }
         }
       }
-    }
 
-    try {
-      await copyTextToClipboard(url);
-      setShareStatus("copied");
-      window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
-    } catch {
-      setShareStatus("failed");
-      window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+      try {
+        await copyTextToClipboard(url);
+        setShareStatus("copied");
+        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+      } catch {
+        setShareStatus("failed");
+        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+      }
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -403,14 +410,18 @@ function ResultsContent() {
             <button
               type="button"
               onClick={shareResults}
+              disabled={sharing}
+              aria-busy={sharing}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
               aria-live="polite"
             >
-              {shareStatus === "shared"
-                ? "Shared results"
-                : shareStatus === "copied"
-                  ? "Copied share link"
-                  : "Share results"}
+              {sharing
+                ? "Sharing…"
+                : shareStatus === "shared"
+                  ? "Shared results"
+                  : shareStatus === "copied"
+                    ? "Copied share link"
+                    : "Share results"}
             </button>
             <button
               type="button"

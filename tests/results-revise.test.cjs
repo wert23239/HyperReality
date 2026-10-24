@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const ts = require('typescript');
 
-function mountResults() {
+function mountResults(options = {}) {
   const slots = [];
   const routes = [];
   const writes = [];
@@ -18,7 +18,8 @@ function mountResults() {
     }).outputText;
     vm.runInNewContext(source, {
       module, exports: module.exports, URLSearchParams,
-      window: { location: { hash: '' } },
+      window: { location: { hash: '', origin: 'https://example.com' }, setTimeout() {} },
+      navigator: options.navigator ?? {}, DOMException,
       sessionStorage: {
         setItem(key, value) {
           if (blocked) throw new Error('storage blocked or full');
@@ -42,7 +43,8 @@ function mountResults() {
         };
         if (name === '@/lib/chapters') return load('src/lib/chapters.ts');
         if (name === '@/lib/questions') return load('src/lib/questions.ts');
-        if (name === '@/lib/last-result' || name === '@/lib/clipboard') return {};
+        if (name === '@/lib/clipboard') return { copyTextToClipboard: options.copy ?? (async () => {}) };
+        if (name === '@/lib/last-result') return {};
         if (name === 'next/link' || name === '@/components/CodeEntry') return { default: 'stub' };
         throw new Error(name);
       },
@@ -61,8 +63,9 @@ function mountResults() {
   }
   return {
     click(label, index = 0) {
-      nodes(render()).filter(node => node.type === 'button' && node.props.children === label)[index].props.onClick();
+      return nodes(render()).filter(node => node.type === 'button' && node.props.children === label)[index].props.onClick();
     },
+    button: label => nodes(render()).find(node => node.type === 'button' && node.props.children === label),
     alerts: () => nodes(render()).filter(node => node.props?.role === 'alert'),
     unblock: () => { blocked = false; },
     routes, writes,
@@ -90,4 +93,34 @@ test('failed revisions stay on the book and announce an actionable error; retry 
     assert.equal(results.writes[0].value.returnToResultsAfterEdit, focused);
     assert.deepEqual(results.writes[0].value.answers, { 0: 'A', 1: 'B', 2: 'C', 3: 'A', 4: 'B', 5: 'C', 6: 'A', 7: 'B' });
   }
+});
+
+
+test('sharing stays busy until settlement and cancellation allows a clean retry', async () => {
+  let rejectShare;
+  let shareCalls = 0;
+  let copies = 0;
+  const results = mountResults({
+    navigator: { share: () => {
+      shareCalls++;
+      return new Promise((resolve, reject) => { rejectShare = reject; });
+    } },
+    copy: async () => { copies++; },
+  });
+  const pending = results.click('Share results');
+  assert.equal(results.button('Sharing…').props.disabled, true);
+  assert.equal(results.button('Sharing…').props['aria-busy'], true);
+  await results.click('Sharing…'); // Even a programmatic repeat must not share again.
+  assert.equal(shareCalls, 1);
+  rejectShare(new DOMException('Cancelled', 'AbortError'));
+  await pending;
+  assert.equal(copies, 0);
+  assert.equal(results.button('Share results').props.disabled, false);
+
+  const retry = results.click('Share results');
+  assert.equal(shareCalls, 2);
+  rejectShare(new Error('Share unavailable'));
+  await retry;
+  assert.equal(copies, 1);
+  assert.equal(results.button('Copied share link').props.disabled, false);
 });
