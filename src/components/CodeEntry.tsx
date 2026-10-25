@@ -11,11 +11,12 @@ function cleanReaderName(name: string) {
 }
 
 function cleanSharedLink(input: string) {
+  // Unwrap sharing syntax without trimming punctuation from the URL itself:
+  // a trailing period can be part of the personalized reader name (e.g. Dr.).
   return input
     .trim()
     .replace(/^<(.+)>$/, "$1")
-    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1")
-    .replace(/[)>.,\]]+$/, "");
+    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1");
 }
 
 function extractReaderNameInput(input: string): string {
