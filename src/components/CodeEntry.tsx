@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
 
@@ -48,6 +48,7 @@ export default function CodeEntry({
   initialReaderName?: string;
 }) {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const errorId = `${inputId}-error`;
   const [open, setOpen] = useState(defaultOpen);
@@ -75,6 +76,8 @@ export default function CodeEntry({
     setCode("");
     setError("");
     setUseInitialReaderName(false);
+    // Clear disappears when the field empties; keep keyboard users in the form.
+    inputRef.current?.focus();
   }
 
   if (!open) {
@@ -101,6 +104,7 @@ export default function CodeEntry({
           Hyper Reality book code
         </label>
         <input
+          ref={inputRef}
           id={inputId}
           autoFocus
           value={code}
