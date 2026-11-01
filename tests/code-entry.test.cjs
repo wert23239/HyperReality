@@ -93,3 +93,19 @@ for (const [label, input, error] of [
     assert.deepEqual(entry.routes, [], 'clearing must not navigate or submit');
   });
 }
+
+
+test('chapter text without a personalized URL restores its Reader name line', () => {
+  for (const resultsLink of ['', 'Results link: unavailable\n']) {
+    const input = `Hyper Reality book code: ${code}\n${resultsLink}Reader name:   Alex   Dr.  \n\nAnswer recap:\n1. Example answer`;
+    const params = submitEntry(input);
+    assert.equal(params.get('code'), code);
+    assert.equal(params.get('name'), 'Alex Dr.');
+  }
+});
+
+test('an explicit URL reader name wins over an outdated Reader name line', () => {
+  const link = `https://example.com/results?${new URLSearchParams({ code, name: 'Sam' })}`;
+  const params = submitEntry(`Hyper Reality book code: ${code}\nResults link: ${link}\nReader name: Alex`);
+  assert.equal(params.get('name'), 'Sam');
+});
