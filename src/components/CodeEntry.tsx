@@ -19,7 +19,7 @@ function cleanSharedLink(input: string) {
     .replace(/^\[[^\]]+\]\((.+)\)$/, "$1");
 }
 
-function extractReaderNameInput(input: string): string {
+function extractReaderNameInput(input: string): string | null {
   const trimmed = cleanSharedLink(input);
   const embeddedResultsLink = trimmed.match(/https?:\/\/[^\s<>)\]]*\/results\?[^\s<>)\]]+/i)?.[0];
   const readerNameLine = trimmed.match(/^Reader name:\s*(.+)$/im)?.[1];
@@ -29,9 +29,14 @@ function extractReaderNameInput(input: string): string {
     const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
     // Plain chapter text also parses as a relative URL; a successful parse
     // alone must not discard its standalone Reader name line.
-    return cleanReaderName(url.searchParams.get("name") ?? hashParams.get("name") ?? readerNameLine ?? "");
+    const name = url.searchParams.get("name") ?? hashParams.get("name") ?? readerNameLine;
+    if (name !== undefined && name !== null) return cleanReaderName(name);
+    // A pasted results link supplies its own personalization context, even
+    // when anonymous. Only bare-code corrections inherit the broken link's name.
+    if (url.searchParams.has("code") || hashParams.has("code")) return "";
+    return null;
   } catch {
-    return cleanReaderName(readerNameLine ?? "");
+    return readerNameLine === undefined ? null : cleanReaderName(readerNameLine);
   }
 }
 
@@ -66,7 +71,7 @@ export default function CodeEntry({
     }
 
     const params = new URLSearchParams({ code: normalized });
-    const readerName = extractReaderNameInput(code) || (useInitialReaderName ? cleanReaderName(initialReaderName) : "");
+    const readerName = extractReaderNameInput(code) ?? (useInitialReaderName ? cleanReaderName(initialReaderName) : "");
     if (readerName) {
       params.set("name", readerName);
     }

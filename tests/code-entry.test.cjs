@@ -39,12 +39,12 @@ function renderEntry(input, options = {}) {
       throw new Error(name);
     },
   });
-  const form = module.exports.default({ defaultOpen: true });
+  const form = module.exports.default({ defaultOpen: true, initialReaderName: options.initialReaderName });
   return { form, routes, updates, focusCount: () => focusCount };
 }
 
-function submitEntry(input) {
-  const { form, routes } = renderEntry(input);
+function submitEntry(input, options) {
+  const { form, routes } = renderEntry(input, options);
   form.props.onSubmit({ preventDefault() {} });
   assert.equal(routes.length, 1);
   return new URL(routes[0], 'https://example.com').searchParams;
@@ -108,4 +108,28 @@ test('an explicit URL reader name wins over an outdated Reader name line', () =>
   const link = `https://example.com/results?${new URLSearchParams({ code, name: 'Sam' })}`;
   const params = submitEntry(`Hyper Reality book code: ${code}\nResults link: ${link}\nReader name: Alex`);
   assert.equal(params.get('name'), 'Sam');
+});
+
+test('anonymous pasted results links do not inherit the broken link reader name', () => {
+  for (const input of [
+    `https://example.com/results?code=${code}`,
+    `/results?code=${code}`,
+    `https://example.com/#/results?code=${code}`,
+    `https://example.com/results?code=${code}&name=`,
+    `<https://example.com/results?code=${code}>`,
+    `[My book](https://example.com/results?code=${code})`,
+  ]) {
+    const params = submitEntry(input, { initialReaderName: 'Alex' });
+    assert.equal(params.get('code'), code);
+    assert.equal(params.has('name'), false, input);
+  }
+});
+
+test('a bare-code correction still preserves the broken link reader name', () => {
+  assert.equal(submitEntry(code, { initialReaderName: 'Alex' }).get('name'), 'Alex');
+});
+
+test('pasted personalized results replace the broken link reader name', () => {
+  const input = `/results?${new URLSearchParams({ code, name: 'Sam' })}`;
+  assert.equal(submitEntry(input, { initialReaderName: 'Alex' }).get('name'), 'Sam');
 });
