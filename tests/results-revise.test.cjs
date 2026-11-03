@@ -8,6 +8,7 @@ function mountResults(options = {}) {
   const slots = [];
   const routes = [];
   const writes = [];
+  const removals = [];
   let cursor = 0;
   let blocked = true;
   const jsx = (type, props) => ({ type, props });
@@ -20,7 +21,17 @@ function mountResults(options = {}) {
       module, exports: module.exports, URLSearchParams,
       window: { location: { hash: '', origin: 'https://example.com' }, setTimeout() {} },
       navigator: options.navigator ?? {}, DOMException,
+      localStorage: {
+        removeItem(key) {
+          removals.push(key);
+          if (options.blockLocalRemoval) throw new Error('local storage blocked');
+        },
+      },
       sessionStorage: {
+        removeItem(key) {
+          removals.push(key);
+          if (options.blockSessionRemoval) throw new Error('session storage blocked');
+        },
         setItem(key, value) {
           if (blocked) throw new Error('storage blocked or full');
           writes.push({ key, value: JSON.parse(value) });
@@ -68,7 +79,7 @@ function mountResults(options = {}) {
     button: label => nodes(render()).find(node => node.type === 'button' && node.props.children === label),
     alerts: () => nodes(render()).filter(node => node.props?.role === 'alert'),
     unblock: () => { blocked = false; },
-    routes, writes,
+    routes, writes, removals,
   };
 }
 
@@ -124,3 +135,17 @@ test('sharing stays busy until settlement and cancellation allows a clean retry'
   assert.equal(copies, 1);
   assert.equal(results.button('Copied share link').props.disabled, false);
 });
+
+for (const [label, options] of [
+  ['available storage', {}],
+  ['blocked session storage', { blockSessionRemoval: true }],
+  ['blocked local storage', { blockLocalRemoval: true }],
+  ['both storage areas blocked', { blockSessionRemoval: true, blockLocalRemoval: true }],
+]) {
+  test(`Start over attempts both resets and returns home with ${label}`, () => {
+    const results = mountResults(options);
+    assert.doesNotThrow(() => results.click('← Start over'));
+    assert.deepEqual(results.removals, ['hr-survey', 'hr-last-result']);
+    assert.deepEqual(results.routes, ['/']);
+  });
+}

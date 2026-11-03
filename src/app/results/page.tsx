@@ -327,6 +327,11 @@ function ResultsContent() {
   function startOver() {
     try {
       sessionStorage.removeItem(SURVEY_STORAGE_KEY);
+    } catch {}
+
+    // Storage areas can fail independently; still hide the remembered book
+    // (and its reader name) when clearing survey progress is blocked.
+    try {
       localStorage.removeItem(LAST_RESULT_STORAGE_KEY);
     } catch {}
 
