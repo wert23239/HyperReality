@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyper Reality — Sketchbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Newsreader:ital,wght@0,200;0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px; height: 800px; overflow: hidden;
+  font-family: 'Newsreader', serif;
+  background: #f5f0e8;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 31px, #d4c9b8 31px, #d4c9b8 32px),
+    repeating-linear-gradient(90deg, transparent, transparent 31px, #e8ddd0 31px, #e8ddd0 32px);
+  position: relative;
+  color: #2a2420;
+}
+/* paper texture overlay */
+body::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 100;
+}
+/* torn left margin */
+.margin-line {
+  position: absolute; left: 88px; top: 0; bottom: 0;
+  border-left: 2px solid #c4727a; opacity: 0.5;
+}
+/* spiral holes */
+.holes { position: absolute; left: 28px; top: 20px; }
+.holes span {
+  display: block; width: 18px; height: 18px;
+  border: 2px solid #a09080; border-radius: 50%;
+  margin-bottom: 50px; background: #e8e0d4;
+}
+/* sketchy border util */
+.sketch-box {
+  border: 2px solid #2a2420;
+  border-radius: 2px;
+  filter: url(#sketchy);
+}
+/* title area */
+.title-area {
+  position: absolute; top: 48px; left: 120px; right: 60px;
+}
+.title-area h1 {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 64px; line-height: 1;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  text-underline-offset: 6px;
+  text-decoration-color: #c4727a;
+}
+.title-area .subtitle {
+  font-family: 'Caveat', cursive; font-size: 26px;
+  color: #6a5a4a; margin-top: 4px;
+  font-style: italic;
+}
+/* doodle arrows */
+.arrow-doodle {
+  position: absolute;
+  font-family: 'Caveat', cursive;
+  font-size: 20px; color: #8a7a6a;
+  transform: rotate(-8deg);
+}
+/* H-diagram */
+.h-diagram {
+  position: absolute; top: 200px; left: 140px;
+  width: 400px; height: 340px;
+}
+.h-diagram svg { width: 100%; height: 100%; }
+/* dice cluster */
+.dice-area {
+  position: absolute; top: 200px; right: 80px;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.dice-area svg { filter: drop-shadow(1px 1px 0 #a09080); }
+.dice-label {
+  font-family: 'Caveat', cursive; font-size: 18px; color: #6a5a4a;
+  text-align: center;
+}
+/* tagline */
+.tagline {
+  position: absolute; bottom: 180px; left: 140px;
+  font-family: 'Caveat', cursive; font-size: 42px;
+  transform: rotate(-2deg);
+  color: #2a2420;
+}
+.tagline .highlight {
+  background: #fce588; padding: 0 8px;
+  border-radius: 2px;
+}
+/* versions badge */
+.versions {
+  position: absolute; bottom: 120px; right: 100px;
+  font-family: 'Caveat', cursive; font-size: 28px;
+  border: 2px solid #2a2420; border-radius: 50%;
+  width: 140px; height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; line-height: 1.2;
+  transform: rotate(6deg);
+  background: #fff8;
+}
+/* CTA */
+.cta {
+  position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+  font-family: 'Caveat', cursive; font-size: 32px;
+  background: #2a2420; color: #f5f0e8;
+  padding: 12px 40px; border: none; cursor: pointer;
+  border-radius: 2px;
+  letter-spacing: 1px;
+}
+/* unique book note */
+.unique-note {
+  position: absolute; top: 160px; left: 580px;
+  font-family: 'Caveat', cursive; font-size: 22px;
+  color: #c4727a; transform: rotate(3deg);
+}
+/* little star doodles */
+.star {
+  position: absolute;
+  font-family: 'Caveat', cursive; font-size: 28px; color: #a09080;
+}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0">
+  <filter id="sketchy">
+    <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="4" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5"/>
+  </filter>
+</svg>
+
+<div class="margin-line"></div>
+<div class="holes">
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span><span></span><span></span>
+  <span></span><span></span>
+</div>
+
+<div class="title-area">
+  <h1>Hyper Reality</h1>
+  <div class="subtitle">The Mysterious Death of Alex Lambert 2</div>
+</div>
+
+<div class="unique-note">↙ A book unique to YOU</div>
+
+<div class="arrow-doodle" style="top:170px;left:420px">← the "H" stands for...</div>
+
+<!-- H-Diagram hand-drawn style -->
+<div class="h-diagram">
+  <svg viewBox="0 0 400 340" fill="none" stroke="#2a2420" stroke-width="2" stroke-linecap="round">
+    <!-- H shape -->
+    <path d="M80 40 C82 120 78 200 80 300" stroke-dasharray="4 2"/>
+    <path d="M320 40 C318 120 322 200 320 300" stroke-dasharray="4 2"/>
+    <path d="M80 170 C140 168 260 172 320 170" stroke-dasharray="4 2"/>
+    <!-- labels -->
+    <text x="30" y="30" font-family="Caveat" font-size="22" fill="#2a2420" stroke="none">Hydrogen</text>
+    <text x="270" y="30" font-family="Caveat" font-size="22" fill="#2a2420" stroke="none">Heaven</text>
+    <text x="50" y="330" font-family="Caveat" font-size="22" fill="#2a2420" stroke="none">Hell</text>
+    <text x="280" y="330" font-family="Caveat" font-size="22" fill="#2a2420" stroke="none">Habit</text>
+    <!-- little circles at ends -->
+    <circle cx="80" cy="40" r="5" fill="#fce588" stroke="#2a2420"/>
+    <circle cx="320" cy="40" r="5" fill="#fce588" stroke="#2a2420"/>
+    <circle cx="80" cy="300" r="5" fill="#c4727a" stroke="#2a2420"/>
+    <circle cx="320" cy="300" r="5" fill="#a09080" stroke="#2a2420"/>
+  </svg>
+</div>
+
+<!-- Dice -->
+<div class="dice-area">
+  <div class="dice-label">the logo ↓</div>
+  <!-- Triangle (3-sided) -->
+  <svg width="80" height="70" viewBox="0 0 80 70">
+    <polygon points="40,5 75,65 5,65" fill="none" stroke="#2a2420" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="40" y="48" text-anchor="middle" font-family="Caveat" font-size="22" fill="#2a2420">3</text>
+  </svg>
+  <!-- Diamond (4-sided) -->
+  <svg width="70" height="80" viewBox="0 0 70 80">
+    <polygon points="35,5 65,40 35,75 5,40" fill="none" stroke="#2a2420" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="35" y="47" text-anchor="middle" font-family="Caveat" font-size="22" fill="#2a2420">4</text>
+  </svg>
+  <!-- Pentagon (5-sided) -->
+  <svg width="80" height="80" viewBox="0 0 80 80">
+    <polygon points="40,5 76,30 62,72 18,72 4,30" fill="none" stroke="#2a2420" stroke-width="2.5" stroke-linejoin="round"/>
+    <text x="40" y="50" text-anchor="middle" font-family="Caveat" font-size="22" fill="#2a2420">5</text>
+  </svg>
+</div>
+
+<div class="tagline">"<span class="highlight">a cockroach</span> vs. a king?"</div>
+
+<div class="versions"><span>6,561<br>unique<br>versions</span></div>
+
+<button class="cta">Take the Survey →</button>
+
+<div class="star" style="top:100px;right:200px">✦</div>
+<div class="star" style="top:540px;left:600px">★</div>
+<div class="star" style="top:400px;right:300px">✶</div>
+
+</body>
+</html>
