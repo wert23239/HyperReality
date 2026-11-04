@@ -67,6 +67,10 @@ export default function Survey() {
   const [readerName, setReaderName] = useState(savedSurvey.readerName);
   const [returnToResultsAfterEdit, setReturnToResultsAfterEdit] = useState(savedSurvey.returnToResultsAfterEdit);
   const [animating, setAnimating] = useState(false);
+  // Delayed answer transitions must use the latest personalization, not the
+  // name captured before the reader clicked Clear name.
+  const readerNameRef = useRef(readerName);
+  readerNameRef.current = readerName;
   // Track each entry's distance from the resume boundary, not whether we ever advanced.
   const surveyHistoryDepthRef = useRef(0);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -190,8 +194,8 @@ export default function Survey() {
     clearSavedSurvey();
     const params = new URLSearchParams();
     surveyQuestions.forEach((_, index) => params.set(String(index), nextAnswers[index]));
-    if (readerName) {
-      params.set("name", readerName);
+    if (readerNameRef.current) {
+      params.set("name", readerNameRef.current);
     }
     router.push(`/results?${params.toString()}`);
   }

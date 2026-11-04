@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const ts = require('typescript');
 
 // Exercise the real component with a deterministic clock and browser history.
-function mountSurvey(current = 1, reducedMotion = false) {
+function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
   const slots = [];
   const effects = [];
   const timers = new Map();
@@ -59,7 +59,7 @@ function mountSurvey(current = 1, reducedMotion = false) {
       throw new Error(name);
     },
     sessionStorage: {
-      getItem: () => JSON.stringify({ current, answers }),
+      getItem: () => JSON.stringify({ current, answers, readerName }),
       setItem() {}, removeItem() {},
     },
     window: {
@@ -95,6 +95,14 @@ function mountSurvey(current = 1, reducedMotion = false) {
         return [node.props?.children].flat(Infinity).map(findBack).find(Boolean);
       }
       findBack(tree).props.onClick();
+    },
+    clearName() {
+      function findClear(node) {
+        if (!node || typeof node !== 'object') return;
+        if (node.type === 'button' && node.props.children === 'Clear name') return node;
+        return [node.props?.children].flat(Infinity).map(findClear).find(Boolean);
+      }
+      findClear(tree).props.onClick();
     },
     get backCalls() { return backCalls; },
     history,
@@ -164,4 +172,23 @@ test('Back stays in the survey after returning to the resumed history boundary',
     assert.equal(survey.backCalls, 1);
     assert.equal(survey.routes.length, 0);
   }
+});
+
+
+test('clearing the reader name during the final answer transition keeps results anonymous', () => {
+  const survey = mountSurvey(7, false, 'Alex');
+  survey.answer();
+  survey.render();
+  survey.clearName();
+  survey.render();
+  survey.flush();
+  assert.equal(survey.routes.length, 1);
+  assert.equal(new URL(survey.routes[0], 'https://example.com').searchParams.has('name'), false);
+});
+
+test('finishing without clearing preserves the personalized reader name', () => {
+  const survey = mountSurvey(7, false, 'Alex');
+  survey.answer();
+  survey.flush();
+  assert.equal(new URL(survey.routes[0], 'https://example.com').searchParams.get('name'), 'Alex');
 });
