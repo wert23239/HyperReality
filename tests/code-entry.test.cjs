@@ -84,7 +84,7 @@ for (const [label, input, error] of [
 ]) {
   test(`Clear returns focus to the code field after clearing ${label}`, () => {
     const entry = renderEntry(input, { error });
-    const field = findElement(entry.form, node => node.type === 'input');
+    const field = findElement(entry.form, node => node.type === 'textarea');
     const clear = findElement(entry.form, node => node.type === 'button' && node.props.children === 'Clear');
     assert.ok(field.props.ref, 'input must be connected to the focus ref');
     clear.props.onClick();
@@ -132,4 +132,18 @@ test('a bare-code correction still preserves the broken link reader name', () =>
 test('pasted personalized results replace the broken link reader name', () => {
   const input = `/results?${new URLSearchParams({ code, name: 'Sam' })}`;
   assert.equal(submitEntry(input, { initialReaderName: 'Alex' }).get('name'), 'Sam');
+});
+
+
+test('code recovery uses a multiline field so pasted chapter exports retain their line boundaries', () => {
+  const entry = renderEntry('');
+  const field = findElement(entry.form, node => node.type === 'textarea');
+  assert.ok(field, 'single-line inputs strip newlines from pasted exports');
+  assert.equal(field.props.rows, 2);
+  const exportText = `Hyper Reality book code: ${code}\nReader name: Alex Dr.\n\nAnswer recap:\n1. Example answer`;
+  field.props.onChange({ target: { value: exportText } });
+  assert.deepEqual(entry.updates, [[1, exportText], [2, '']]);
+  const params = submitEntry(entry.updates[0][1]);
+  assert.equal(params.get('code'), code);
+  assert.equal(params.get('name'), 'Alex Dr.');
 });

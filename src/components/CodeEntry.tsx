@@ -55,7 +55,7 @@ export default function CodeEntry({
   initialReaderName?: string;
 }) {
   const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
   const errorId = `${inputId}-error`;
   const [open, setOpen] = useState(defaultOpen);
@@ -110,14 +110,15 @@ export default function CodeEntry({
         <label htmlFor={inputId} className="sr-only">
           Hyper Reality book code
         </label>
-        <input
+        <textarea
           ref={inputRef}
           id={inputId}
           autoFocus
+          rows={2}
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(""); }}
-          placeholder="Code or results link"
-          className="min-w-0 flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
+          placeholder="Code, results link, or chapter-list text"
+          className="min-w-0 flex-1 resize-y px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
         />
