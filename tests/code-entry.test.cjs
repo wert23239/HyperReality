@@ -147,3 +147,17 @@ test('code recovery uses a multiline field so pasted chapter exports retain thei
   assert.equal(params.get('code'), code);
   assert.equal(params.get('name'), 'Alex Dr.');
 });
+
+
+test('empty Reader name lines do not consume the next export heading', () => {
+  for (const newline of ['\n', '\r\n']) {
+    for (const blankName of ['', '   ', '\t']) {
+      const input = [`Hyper Reality book code: ${code}`, `Reader name:${blankName}`, '', 'Answer recap:', '1. Example answer'].join(newline);
+      for (const initialReaderName of ['', 'Alex']) {
+        const params = submitEntry(input, { initialReaderName });
+        assert.equal(params.get('code'), code);
+        assert.equal(params.has('name'), false, JSON.stringify(input));
+      }
+    }
+  }
+});

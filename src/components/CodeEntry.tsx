@@ -22,7 +22,8 @@ function cleanSharedLink(input: string) {
 function extractReaderNameInput(input: string): string | null {
   const trimmed = cleanSharedLink(input);
   const embeddedResultsLink = trimmed.match(/https?:\/\/[^\s<>)\]]*\/results\?[^\s<>)\]]+/i)?.[0];
-  const readerNameLine = trimmed.match(/^Reader name:\s*(.+)$/im)?.[1];
+  // Match only within this line: blank names must not capture the next heading.
+  const readerNameLine = trimmed.match(/^Reader name:[^\S\r\n]*([^\r\n]*)$/im)?.[1];
 
   try {
     const url = new URL(cleanSharedLink(embeddedResultsLink ?? trimmed), "https://hyper-reality.local");
