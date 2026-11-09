@@ -161,3 +161,40 @@ test('empty Reader name lines do not consume the next export heading', () => {
     }
   }
 });
+
+
+test('Enter opens a valid pasted code or export without inserting a newline', () => {
+  for (const input of [code, `Hyper Reality book code: ${code}\nReader name: Alex`]) {
+    const entry = renderEntry(input);
+    const field = findElement(entry.form, node => node.type === 'textarea');
+    let prevented = false;
+    field.props.onKeyDown({ key: 'Enter', shiftKey: false, nativeEvent: { isComposing: false }, preventDefault() { prevented = true; } });
+    assert.equal(prevented, true);
+    assert.equal(entry.routes.length, 1);
+    const params = new URL(entry.routes[0], 'https://example.com').searchParams;
+    assert.equal(params.get('code'), code);
+    assert.equal(params.get('name'), input === code ? null : 'Alex');
+  }
+});
+
+test('Shift+Enter, composition confirmation, and other keys do not submit', () => {
+  for (const event of [
+    { key: 'Enter', shiftKey: true, nativeEvent: { isComposing: false } },
+    { key: 'Enter', shiftKey: false, nativeEvent: { isComposing: true } },
+    { key: 'a', shiftKey: false, nativeEvent: { isComposing: false } },
+  ]) {
+    const entry = renderEntry(code);
+    const field = findElement(entry.form, node => node.type === 'textarea');
+    field.props.onKeyDown({ ...event, preventDefault() { assert.fail('must preserve normal text entry'); } });
+    assert.deepEqual(entry.routes, []);
+  }
+});
+
+test('Enter on an invalid code shows validation instead of navigating', () => {
+  const entry = renderEntry('not a code');
+  const field = findElement(entry.form, node => node.type === 'textarea');
+  field.props.onKeyDown({ key: 'Enter', shiftKey: false, nativeEvent: { isComposing: false }, preventDefault() {} });
+  assert.deepEqual(entry.routes, []);
+  assert.equal(entry.updates[0][0], 2);
+  assert.match(entry.updates[0][1], /doesn't look right/);
+});

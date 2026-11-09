@@ -59,6 +59,7 @@ export default function CodeEntry({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const inputId = useId();
   const errorId = `${inputId}-error`;
+  const helpId = `${inputId}-help`;
   const [open, setOpen] = useState(defaultOpen);
   const [code, setCode] = useState(initialCode);
   const [error, setError] = useState("");
@@ -118,10 +119,18 @@ export default function CodeEntry({
           rows={2}
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(""); }}
+          onKeyDown={(e) => {
+            // Keep quick keyboard submission without losing multiline pastes or
+            // interrupting Enter when it is used to confirm an IME composition.
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              submit();
+            }
+          }}
           placeholder="Code, results link, or chapter-list text"
           className="min-w-0 flex-1 resize-y px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? errorId : undefined}
+          aria-describedby={error ? `${helpId} ${errorId}` : helpId}
         />
         <button
           type="submit"
@@ -139,6 +148,9 @@ export default function CodeEntry({
           </button>
         )}
       </div>
+      <p id={helpId} className="text-xs text-gray-400 text-center">
+        Enter to open · Shift+Enter for a new line
+      </p>
       {error && <p id={errorId} className="text-xs text-red-400 text-center" role="alert">{error}</p>}
     </form>
   );
