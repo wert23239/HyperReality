@@ -9,6 +9,7 @@ function mountResults(options = {}) {
   const routes = [];
   const writes = [];
   const removals = [];
+  const focusCalls = [];
   let cursor = 0;
   let blocked = true;
   const jsx = (type, props) => ({ type, props });
@@ -44,12 +45,16 @@ function mountResults(options = {}) {
             if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial;
             return [slots[i], value => { slots[i] = value; }];
           },
+          useRef(initial) {
+            const i = cursor++;
+            return slots[i] ??= { current: initial };
+          },
           useEffect() {},
           Suspense: 'suspense',
         };
         if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx };
         if (name === 'next/navigation') return {
-          useRouter: () => ({ push: url => routes.push(url) }),
+          useRouter: () => ({ push: url => routes.push(url), replace: url => routes.push(url) }),
           useSearchParams: () => new URLSearchParams({ code: '1A-2B-3C-4-5-6A-7B-8C-9A-10B-11' }),
         };
         if (name === '@/lib/chapters') return load('src/lib/chapters.ts');
@@ -66,7 +71,10 @@ function mountResults(options = {}) {
   function render() {
     cursor = 0;
     const wrapper = Results();
-    return wrapper.props.children.type();
+    const tree = wrapper.props.children.type();
+    const input = nodes(tree).find(node => node.props?.id === 'reader-name');
+    if (input?.props.ref) input.props.ref.current = { focus: options => focusCalls.push(options) };
+    return tree;
   }
   function nodes(node) {
     if (!node || typeof node !== 'object') return [];
@@ -79,7 +87,11 @@ function mountResults(options = {}) {
     button: label => nodes(render()).find(node => node.type === 'button' && node.props.children === label),
     alerts: () => nodes(render()).filter(node => node.props?.role === 'alert'),
     unblock: () => { blocked = false; },
-    routes, writes, removals,
+    changeName(value) {
+      nodes(render()).find(node => node.props?.id === 'reader-name').props.onChange({ target: { value } });
+    },
+    nameValue: () => nodes(render()).find(node => node.props?.id === 'reader-name').props.value,
+    routes, writes, removals, focusCalls,
   };
 }
 
@@ -149,3 +161,16 @@ for (const [label, options] of [
     assert.deepEqual(results.routes, ['/']);
   });
 }
+
+
+test('clearing a cover-name draft returns focus to the editor after Clear disappears', () => {
+  const results = mountResults();
+  results.changeName('Alex');
+  assert.ok(results.button('Clear'));
+  results.click('Clear');
+  assert.equal(results.nameValue(), '');
+  assert.equal(results.button('Clear'), undefined);
+  assert.equal(results.focusCalls.length, 1);
+  assert.equal(results.focusCalls[0].preventScroll, true);
+  assert.equal(new URL(results.routes[0], 'https://example.com').searchParams.has('name'), false);
+});

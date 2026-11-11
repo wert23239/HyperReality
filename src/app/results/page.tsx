@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { buildBookCode, getAnswersFromBookCode, getChaptersFromCode, getVersionNumberFromCode, isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 import { questions } from "@/lib/questions";
 import { rememberLastResult } from "@/lib/last-result";
@@ -36,6 +36,7 @@ function ResultsContent() {
   const [sharing, setSharing] = useState(false);
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
+  const readerNameInputRef = useRef<HTMLInputElement>(null);
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
   const [reviseFailed, setReviseFailed] = useState(false);
   const [siteOrigin, setSiteOrigin] = useState("");
@@ -218,6 +219,8 @@ function ResultsContent() {
   }
 
   function clearReaderName() {
+    // Clear disappears after reset; keep keyboard focus in the name editor.
+    readerNameInputRef.current?.focus({ preventScroll: true });
     setNameInput("");
     setReaderName("");
     setNameStatus("removed");
@@ -491,6 +494,7 @@ function ResultsContent() {
           </label>
           <div className="flex gap-2">
             <input
+              ref={readerNameInputRef}
               id="reader-name"
               value={nameInput}
               onChange={(event) => setNameInput(event.target.value)}
