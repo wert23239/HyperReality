@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyper Reality — Scroll Story</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Crimson+Pro:ital,wght@0,200;0,400;0,900;1,200&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  width: 1280px;
+  font-family: 'Crimson Pro', serif;
+  background: #0a0a0a; color: #f0ece4;
+}
+section {
+  width: 1280px; height: 800px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+/* Section 1: Title reveal */
+.s1 {
+  background: linear-gradient(180deg, #f0ece4 0%, #e8e0d4 100%);
+  color: #1a1a1a;
+  flex-direction: column; gap: 16px;
+}
+.s1 h1 {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 160px; line-height: 0.85;
+  letter-spacing: -6px;
+}
+.s1 .sub {
+  font-weight: 200; font-size: 20px;
+  letter-spacing: 6px; text-transform: uppercase;
+  color: #888;
+}
+.s1 .tagline {
+  font-family: 'Caveat', cursive; font-size: 36px;
+  color: #b33; margin-top: 12px;
+}
+/* big decorative line */
+.s1::after {
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 1px; height: 120px; background: #1a1a1a;
+}
+
+/* Section 2: H-diagram cinematic */
+.s2 {
+  background: #1a1a1a; color: #f0ece4;
+  flex-direction: column; gap: 30px;
+}
+.s2 .label {
+  font-weight: 200; font-size: 13px;
+  letter-spacing: 8px; text-transform: uppercase;
+  color: #666;
+}
+.s2 svg { filter: drop-shadow(0 0 40px rgba(200,50,50,0.1)); }
+
+/* Section 3: Dice + versions */
+.s3 {
+  background: linear-gradient(135deg, #f0ece4, #e4dcd0);
+  color: #1a1a1a;
+}
+.s3-inner {
+  display: flex; align-items: center; gap: 100px;
+}
+.dice-stack { display: flex; flex-direction: column; gap: 30px; align-items: center; }
+.dice-stack svg { transition: transform 0.3s; }
+.s3-text { text-align: left; }
+.s3-text .big-num {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 120px; line-height: 1;
+}
+.s3-text .versions-label {
+  font-weight: 200; font-size: 14px;
+  letter-spacing: 5px; text-transform: uppercase; color: #888;
+}
+.s3-text .unique {
+  font-family: 'Caveat', cursive; font-size: 32px;
+  color: #b33; margin-top: 16px;
+}
+
+/* Section 4: CTA */
+.s4 {
+  background: #1a1a1a; color: #f0ece4;
+  flex-direction: column; gap: 40px;
+}
+.s4 .prompt {
+  font-family: 'Caveat', cursive; font-size: 52px;
+  text-align: center; max-width: 700px; line-height: 1.3;
+}
+.s4 .cta-btn {
+  font-family: 'Caveat', cursive; font-size: 32px;
+  background: #f0ece4; color: #1a1a1a;
+  padding: 18px 64px; border: none; cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.s4 .cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(240,236,228,0.2);
+}
+.s4 .footer {
+  font-weight: 200; font-size: 12px;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: #555;
+}
+</style>
+</head>
+<body>
+
+<section class="s1">
+  <div class="sub">The Mysterious Death of Alex Lambert 2</div>
+  <h1>Hyper<br>Reality</h1>
+  <div class="tagline">"a cockroach vs. a king?"</div>
+</section>
+
+<section class="s2">
+  <div class="label">The H-Diagram</div>
+  <svg width="500" height="400" viewBox="0 0 500 400" fill="none">
+    <line x1="100" y1="40" x2="100" y2="360" stroke="#f0ece4" stroke-width="1"/>
+    <line x1="400" y1="40" x2="400" y2="360" stroke="#f0ece4" stroke-width="1"/>
+    <line x1="100" y1="200" x2="400" y2="200" stroke="#f0ece4" stroke-width="1"/>
+    <!-- glow nodes -->
+    <circle cx="100" cy="40" r="4" fill="#c44"/>
+    <circle cx="400" cy="40" r="4" fill="#8c8"/>
+    <circle cx="100" cy="360" r="4" fill="#c44"/>
+    <circle cx="400" cy="360" r="4" fill="#88c"/>
+    <text x="100" y="24" text-anchor="middle" font-family="Caveat" font-size="24" fill="#f0ece4">Hydrogen</text>
+    <text x="400" y="24" text-anchor="middle" font-family="Caveat" font-size="24" fill="#f0ece4">Heaven</text>
+    <text x="100" y="392" text-anchor="middle" font-family="Caveat" font-size="24" fill="#f0ece4">Hell</text>
+    <text x="400" y="392" text-anchor="middle" font-family="Caveat" font-size="24" fill="#f0ece4">Habit</text>
+  </svg>
+</section>
+
+<section class="s3">
+  <div class="s3-inner">
+    <div class="dice-stack">
+      <svg width="100" height="88" viewBox="0 0 100 88"><polygon points="50,4 96,84 4,84" fill="none" stroke="#1a1a1a" stroke-width="2"/><text x="50" y="66" text-anchor="middle" font-family="Caveat" font-size="28" fill="#1a1a1a">3</text></svg>
+      <svg width="88" height="100" viewBox="0 0 88 100"><polygon points="44,4 84,50 44,96 4,50" fill="none" stroke="#1a1a1a" stroke-width="2"/><text x="44" y="58" text-anchor="middle" font-family="Caveat" font-size="28" fill="#1a1a1a">4</text></svg>
+      <svg width="100" height="100" viewBox="0 0 100 100"><polygon points="50,4 96,36 80,92 20,92 4,36" fill="none" stroke="#1a1a1a" stroke-width="2"/><text x="50" y="62" text-anchor="middle" font-family="Caveat" font-size="28" fill="#1a1a1a">5</text></svg>
+    </div>
+    <div class="s3-text">
+      <div class="big-num">6,561</div>
+      <div class="versions-label">Unique Versions</div>
+      <div class="unique">A book unique to YOU</div>
+    </div>
+  </div>
+</section>
+
+<section class="s4">
+  <div class="prompt">Which version<br>is yours?</div>
+  <button class="cta-btn">Take the Survey</button>
+  <div class="footer">Hyper Reality • 2025</div>
+</section>
+
+</body>
+</html>

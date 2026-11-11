@@ -1,0 +1,157 @@
+"use client";
+
+import { useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
+
+const MAX_READER_NAME_LENGTH = 60;
+
+function cleanReaderName(name: string) {
+  return name.replace(/\s+/g, " ").trim().slice(0, MAX_READER_NAME_LENGTH);
+}
+
+function cleanSharedLink(input: string) {
+  // Unwrap sharing syntax without trimming punctuation from the URL itself:
+  // a trailing period can be part of the personalized reader name (e.g. Dr.).
+  return input
+    .trim()
+    .replace(/^<(.+)>$/, "$1")
+    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1");
+}
+
+function extractReaderNameInput(input: string): string | null {
+  const trimmed = cleanSharedLink(input);
+  const embeddedResultsLink = trimmed.match(/https?:\/\/[^\s<>)\]]*\/results\?[^\s<>)\]]+/i)?.[0];
+  // Match only within this line: blank names must not capture the next heading.
+  const readerNameLine = trimmed.match(/^Reader name:[^\S\r\n]*([^\r\n]*)$/im)?.[1];
+
+  try {
+    const url = new URL(cleanSharedLink(embeddedResultsLink ?? trimmed), "https://hyper-reality.local");
+    const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
+    // Plain chapter text also parses as a relative URL; a successful parse
+    // alone must not discard its standalone Reader name line.
+    const name = url.searchParams.get("name") ?? hashParams.get("name") ?? readerNameLine;
+    if (name !== undefined && name !== null) return cleanReaderName(name);
+    // A pasted results link supplies its own personalization context, even
+    // when anonymous. Only bare-code corrections inherit the broken link's name.
+    if (url.searchParams.has("code") || hashParams.has("code")) return "";
+    return null;
+  } catch {
+    return readerNameLine === undefined ? null : cleanReaderName(readerNameLine);
+  }
+}
+
+/**
+ * Inline "Have a code?" widget for the landing page.
+ * Expands into a text input on click; accepts a book code or full results URL,
+ * validates the code format, and navigates to /results.
+ */
+export default function CodeEntry({
+  defaultOpen = false,
+  initialCode = "",
+  initialReaderName = "",
+}: {
+  defaultOpen?: boolean;
+  initialCode?: string;
+  initialReaderName?: string;
+}) {
+  const router = useRouter();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputId = useId();
+  const errorId = `${inputId}-error`;
+  const helpId = `${inputId}-help`;
+  const [open, setOpen] = useState(defaultOpen);
+  const [code, setCode] = useState(initialCode);
+  const [error, setError] = useState("");
+  const [useInitialReaderName, setUseInitialReaderName] = useState(true);
+
+  function submit() {
+    const normalized = normalizeBookCode(code);
+    if (!isValidBookCode(normalized)) {
+      setError("That doesn't look right — paste a book code or results link like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
+      return;
+    }
+
+    const params = new URLSearchParams({ code: normalized });
+    const readerName = extractReaderNameInput(code) ?? (useInitialReaderName ? cleanReaderName(initialReaderName) : "");
+    if (readerName) {
+      params.set("name", readerName);
+    }
+
+    router.push(`/results?${params.toString()}`);
+  }
+
+  function clearEntry() {
+    setCode("");
+    setError("");
+    setUseInitialReaderName(false);
+    // Clear disappears when the field empties; keep keyboard users in the form.
+    inputRef.current?.focus();
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="text-sm text-gray-400 hover:text-gray-600 transition-colors font-body underline underline-offset-4"
+      >
+        Have a code already?
+      </button>
+    );
+  }
+
+  return (
+    <form
+      className="flex flex-col items-center gap-3 w-full max-w-xs mx-auto"
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <div className="flex gap-2 w-full">
+        <label htmlFor={inputId} className="sr-only">
+          Hyper Reality book code
+        </label>
+        <textarea
+          ref={inputRef}
+          id={inputId}
+          autoFocus
+          rows={2}
+          value={code}
+          onChange={(e) => { setCode(e.target.value); setError(""); }}
+          onKeyDown={(e) => {
+            // Keep quick keyboard submission without losing multiline pastes or
+            // interrupting Enter when it is used to confirm an IME composition.
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          placeholder="Code, results link, or chapter-list text"
+          className="min-w-0 flex-1 resize-y px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-accent-blue outline-none font-mono text-sm text-gray-700"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${helpId} ${errorId}` : helpId}
+        />
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-lg bg-accent-blue text-white font-hand text-lg hover:opacity-90 transition-opacity"
+        >
+          Go
+        </button>
+        {(code || error) && (
+          <button
+            type="button"
+            onClick={clearEntry}
+            className="px-3 py-2 rounded-lg border-2 border-gray-200 text-gray-400 font-hand text-lg hover:border-gray-300 hover:text-gray-600 transition-colors"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      <p id={helpId} className="text-xs text-gray-400 text-center">
+        Enter to open · Shift+Enter for a new line
+      </p>
+      {error && <p id={errorId} className="text-xs text-red-400 text-center" role="alert">{error}</p>}
+    </form>
+  );
+}

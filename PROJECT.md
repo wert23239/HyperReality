@@ -132,3 +132,14 @@ Each reader's version is encoded: `1A-2C-3B-4-5-6A-7C-8B-9A-10C-11`
 - How to deliver PDF after Venmo payment? Manual or automated?
 - Which Amazon versions to publish? All 6,561? Top ~10 archetypes?
 - Domain: hyperreality.book? hyperrealitybook.com?
+
+### Book Note: Categories Chapter Idea
+- **Chapter**: Categories (3A)
+- **Concept**: Games as a lens for categories/classification
+  - **Blackout games** → drinking/party category
+  - **Kings Cup** → party games
+  - **Pizza Box** → social games
+  - **Red Flags** → fun/humor games
+  - **Monopoly** → strategy games
+  - **Scythe** → strategy games
+- Use game types as circles/categories to illustrate the broader point about how we categorize things
