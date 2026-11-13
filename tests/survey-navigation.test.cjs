@@ -6,6 +6,7 @@ const ts = require('typescript');
 
 // Exercise the real component with a deterministic clock and browser history.
 function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
+  const document = { title: "Hyper Reality" };
   const slots = [];
   const effects = [];
   const timers = new Map();
@@ -49,7 +50,7 @@ function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(source, {
-    module, exports: module.exports,
+    module, exports: module.exports, document,
     require(name) {
       if (name === 'react') return react;
       if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx };
@@ -115,6 +116,8 @@ function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
         fn();
       }
     },
+    get title() { return document.title; },
+    runEffects() { effects.splice(0).forEach(fn => fn()); },
     pushes, routes, slots,
   };
 }
@@ -191,4 +194,21 @@ test('finishing without clearing preserves the personalized reader name', () => 
   survey.answer();
   survey.flush();
   assert.equal(new URL(survey.routes[0], 'https://example.com').searchParams.get('name'), 'Alex');
+});
+
+
+test('survey titles identify the current question, follow navigation, and restore on exit', () => {
+  for (const current of [0, 3, 7]) {
+    const survey = mountSurvey(current, true);
+    assert.equal(survey.title, `Question ${current + 1} of 8 | Hyper Reality`);
+    if (current < 7) {
+      survey.answer();
+      survey.flush();
+      survey.render();
+      survey.runEffects();
+      assert.equal(survey.title, `Question ${current + 2} of 8 | Hyper Reality`);
+    }
+    survey.unmount();
+    assert.equal(survey.title, 'Hyper Reality');
+  }
 });

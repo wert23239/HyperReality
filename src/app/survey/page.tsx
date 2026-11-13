@@ -92,6 +92,13 @@ export default function Survey() {
   const allAnswersComplete = surveyQuestions.every((_, index) => ["A", "B", "C"].includes(answers[index]));
   const progress = ((current) / total) * 100;
 
+  // Identify the active prompt in browser tabs and screen-reader page titles.
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = `Question ${current + 1} of ${total} | Hyper Reality`;
+    return () => { document.title = previousTitle; };
+  }, [current, total]);
+
   // Sync to sessionStorage on change
   useEffect(() => { save(current, answers, readerName, returnToResultsAfterEdit); }, [current, answers, readerName, returnToResultsAfterEdit]);
 
