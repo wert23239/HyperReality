@@ -27,7 +27,7 @@ function extractReaderNameInput(input: string): string | null {
 
   try {
     const url = new URL(cleanSharedLink(embeddedResultsLink ?? trimmed), "https://hyper-reality.local");
-    const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
+    const hashParams = new URLSearchParams(url.hash.split("?").slice(1).join("?"));
     // Plain chapter text also parses as a relative URL; a successful parse
     // alone must not discard its standalone Reader name line.
     const name = url.searchParams.get("name") ?? hashParams.get("name") ?? readerNameLine;

@@ -198,3 +198,34 @@ test('Enter on an invalid code shows validation instead of navigating', () => {
   assert.equal(entry.updates[0][0], 2);
   assert.match(entry.updates[0][1], /doesn't look right/);
 });
+
+
+test('hash results links preserve question marks in names and later code parameters', () => {
+  for (const input of [
+    `https://example.com/#/results?name=Who?%20Me?&code=${code}`,
+    `https://example.com/#/results?code=${code}&name=Who?%20Me?`,
+    `#/results?name=Who?%20Me?&code=${code}`,
+  ]) {
+    const params = submitEntry(input);
+    assert.equal(params.get('code'), code);
+    assert.equal(params.get('name'), 'Who? Me?');
+  }
+});
+
+test('direct hash results parsing keeps complete query values and subsequent parameters', () => {
+  const source = fs.readFileSync('src/app/results/page.tsx', 'utf8');
+  const parser = source.match(/function getHashSearchParams\(\) \{[\s\S]*?\n\}/)[0];
+  for (const hash of [
+    `#/results?name=Who?%20Me?&code=${code}`,
+    `#/results?code=${code}&name=Who?%20Me?`,
+  ]) {
+    const params = vm.runInNewContext(`${parser}; getHashSearchParams()`, {
+      window: { location: { hash } }, URLSearchParams,
+    });
+    assert.equal(params.get('code'), code);
+    assert.equal(params.get('name'), 'Who? Me?');
+  }
+  assert.equal(vm.runInNewContext(`${parser}; getHashSearchParams()`, {
+    window: { location: { hash: '#/results' } }, URLSearchParams,
+  }), null);
+});

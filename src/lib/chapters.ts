@@ -75,7 +75,7 @@ export function extractBookCodeInput(input: string): string {
 
   try {
     const url = new URL(trimmed, "https://hyper-reality.local");
-    const hashParams = new URLSearchParams(url.hash.split("?")[1] ?? "");
+    const hashParams = new URLSearchParams(url.hash.split("?").slice(1).join("?"));
     const urlCode = url.searchParams.get("code") ?? hashParams.get("code");
     if (urlCode) return urlCode;
   } catch {

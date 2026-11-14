@@ -18,7 +18,9 @@ const UNIQUE_VERSIONS = Math.pow(3, questionToSection.length);
 function getHashSearchParams() {
   if (typeof window === "undefined") return null;
 
-  const hashQuery = window.location.hash.split("?")[1] ?? "";
+  // Only the first question mark separates the route from its query. Later
+  // question marks are valid query values, including reader-name punctuation.
+  const hashQuery = window.location.hash.split("?").slice(1).join("?");
   return hashQuery ? new URLSearchParams(hashQuery) : null;
 }
 
