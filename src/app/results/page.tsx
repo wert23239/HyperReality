@@ -45,7 +45,11 @@ function ResultsContent() {
   const cleanNameInput = cleanReaderName(nameInput);
   const nameCharactersRemaining = MAX_READER_NAME_LENGTH - cleanNameInput.length;
   const effectiveSearchParams = new URLSearchParams(searchParams.toString());
-  hashParams?.forEach((value, key) => {
+  // Next can remove the hash through history.replaceState without firing
+  // hashchange. Do not merge cached fragment values back into the clean URL
+  // after canonicalization (for example, restoring a cleared reader name).
+  const activeHashParams = typeof window !== "undefined" && window.location.hash ? hashParams : null;
+  activeHashParams?.forEach((value, key) => {
     if (!effectiveSearchParams.has(key)) {
       effectiveSearchParams.set(key, value);
     }

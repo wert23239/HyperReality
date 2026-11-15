@@ -6,6 +6,11 @@ const ts = require('typescript');
 
 function mountResults(options = {}) {
   const slots = [];
+  const effects = [];
+  const effectDeps = [];
+  let effectCursor = 0;
+  const location = { hash: options.hash ?? "", origin: "https://example.com" };
+  let query = options.query ?? "code=1A-2B-3C-4-5-6A-7B-8C-9A-10B-11";
   const routes = [];
   const writes = [];
   const removals = [];
@@ -20,7 +25,10 @@ function mountResults(options = {}) {
     }).outputText;
     vm.runInNewContext(source, {
       module, exports: module.exports, URLSearchParams,
-      window: { location: { hash: '', origin: 'https://example.com' }, setTimeout() {} },
+      document: { title: 'Hyper Reality' },
+      setTimeout() {}, clearTimeout() {},
+      window: { location, setTimeout() {}, addEventListener() {}, removeEventListener() {},
+        matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) },
       navigator: options.navigator ?? {}, DOMException,
       localStorage: {
         removeItem(key) {
@@ -49,18 +57,24 @@ function mountResults(options = {}) {
             const i = cursor++;
             return slots[i] ??= { current: initial };
           },
-          useEffect() {},
+          useEffect(fn, deps) {
+            const i = effectCursor++;
+            const previous = effectDeps[i];
+            if (!previous || !deps || deps.some((value, index) => value !== previous[index])) {
+              effects.push(() => { effectDeps[i] = deps; return fn(); });
+            }
+          },
           Suspense: 'suspense',
         };
         if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx };
         if (name === 'next/navigation') return {
           useRouter: () => ({ push: url => routes.push(url), replace: url => routes.push(url) }),
-          useSearchParams: () => new URLSearchParams({ code: '1A-2B-3C-4-5-6A-7B-8C-9A-10B-11' }),
+          useSearchParams: () => new URLSearchParams(query),
         };
         if (name === '@/lib/chapters') return load('src/lib/chapters.ts');
         if (name === '@/lib/questions') return load('src/lib/questions.ts');
         if (name === '@/lib/clipboard') return { copyTextToClipboard: options.copy ?? (async () => {}) };
-        if (name === '@/lib/last-result') return {};
+        if (name === '@/lib/last-result') return { rememberLastResult() {} };
         if (name === 'next/link' || name === '@/components/CodeEntry') return { default: 'stub' };
         throw new Error(name);
       },
@@ -70,6 +84,8 @@ function mountResults(options = {}) {
   const Results = load('src/app/results/page.tsx').default;
   function render() {
     cursor = 0;
+    effectCursor = 0;
+    effects.length = 0;
     const wrapper = Results();
     const tree = wrapper.props.children.type();
     const input = nodes(tree).find(node => node.props?.id === 'reader-name');
@@ -91,6 +107,15 @@ function mountResults(options = {}) {
       nodes(render()).find(node => node.props?.id === 'reader-name').props.onChange({ target: { value } });
     },
     nameValue: () => nodes(render()).find(node => node.props?.id === 'reader-name').props.value,
+    runEffects() {
+      render();
+      effects.splice(0).forEach(fn => fn());
+    },
+    navigate(url) {
+      const next = new URL(url, location.origin);
+      location.hash = next.hash;
+      query = next.search.slice(1);
+    },
     routes, writes, removals, focusCalls,
   };
 }
@@ -173,4 +198,24 @@ test('clearing a cover-name draft returns focus to the editor after Clear disapp
   assert.equal(results.focusCalls.length, 1);
   assert.equal(results.focusCalls[0].preventScroll, true);
   assert.equal(new URL(results.routes[0], 'https://example.com').searchParams.has('name'), false);
+});
+
+
+test('canonicalizing a hash results link does not restore its removed reader name', () => {
+  const code = '1A-2B-3C-4-5-6A-7B-8C-9A-10B-11';
+  const results = mountResults({ query: '', hash: `#/results?code=${code}&name=Alex` });
+  results.runEffects();
+  assert.equal(new URL(results.routes[0], 'https://example.com').searchParams.get('name'), 'Alex');
+
+  // Next replaces the URL through history without necessarily firing hashchange.
+  results.navigate(results.routes[0]);
+  results.runEffects();
+  assert.equal(results.nameValue(), 'Alex');
+  results.click('Clear');
+  const clearedURL = results.routes.at(-1);
+  assert.equal(new URL(clearedURL, 'https://example.com').searchParams.has('name'), false);
+  results.navigate(clearedURL);
+  results.runEffects();
+  assert.equal(results.nameValue(), '');
+  assert.equal(results.routes.at(-1), clearedURL);
 });
