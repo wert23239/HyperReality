@@ -38,8 +38,9 @@ export const chapterMap: Record<string, string> = {
 // Maps question index to section number
 export const questionToSection = [1, 2, 3, 6, 7, 8, 9, 10];
 export const fixedSections = [4, 5, 11];
+// Extract whole codes from exports, never a valid-looking substring of a typo.
 const bookCodeCandidatePattern =
-  /1[ABC][\s,.;:/|_–—−-]*2[ABC][\s,.;:/|_–—−-]*3[ABC][\s,.;:/|_–—−-]*4[\s,.;:/|_–—−-]*5[\s,.;:/|_–—−-]*6[ABC][\s,.;:/|_–—−-]*7[ABC][\s,.;:/|_–—−-]*8[ABC][\s,.;:/|_–—−-]*9[ABC][\s,.;:/|_–—−-]*10[ABC][\s,.;:/|_–—−-]*11/i;
+  /(?<![A-Z0-9])1[ABC][\s,.;:/|_–—−-]*2[ABC][\s,.;:/|_–—−-]*3[ABC][\s,.;:/|_–—−-]*4[\s,.;:/|_–—−-]*5[\s,.;:/|_–—−-]*6[ABC][\s,.;:/|_–—−-]*7[ABC][\s,.;:/|_–—−-]*8[ABC][\s,.;:/|_–—−-]*9[ABC][\s,.;:/|_–—−-]*10[ABC][\s,.;:/|_–—−-]*11(?![A-Z0-9])/i;
 const invisibleCharacterPattern = /[\u200B-\u200D\u2060\uFEFF]/g;
 
 export function buildBookCode(answers: Record<number, string>): string {

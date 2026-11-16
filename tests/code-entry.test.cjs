@@ -229,3 +229,18 @@ test('direct hash results parsing keeps complete query values and subsequent par
     window: { location: { hash: '#/results' } }, URLSearchParams,
   }), null);
 });
+
+test('rejects book codes embedded in longer alphanumeric identifiers', () => {
+  for (const input of [`${code}1`, `${code}A`, `9${code}`, `X${code}`, `Book code: ${code}2\nReader name: Alex`]) {
+    const entry = renderEntry(input);
+    entry.form.props.onSubmit({ preventDefault() {} });
+    assert.equal(entry.routes.length, 0, `must not silently truncate ${input}`);
+    assert.ok(entry.updates.some(([index, value]) => index === 2 && value), 'show validation feedback');
+  }
+});
+
+test('still accepts complete codes surrounded by prose or punctuation', () => {
+  for (const input of [`Book code: ${code}.`, `(${code})`, `Your book: ${code}\nAnswer recap:`]) {
+    assert.equal(submitEntry(input).get('code'), code);
+  }
+});
