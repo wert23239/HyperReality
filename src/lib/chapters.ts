@@ -72,13 +72,27 @@ const expectedCodeParts = [
 ];
 
 export function extractBookCodeInput(input: string): string {
-  const trimmed = input.replace(invisibleCharacterPattern, "").trim();
+  const trimmed = input.replace(invisibleCharacterPattern, "").trim()
+    .replace(/^<(.+)>$/, "$1")
+    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1");
 
   try {
     const url = new URL(trimmed, "https://hyper-reality.local");
     const hashParams = new URLSearchParams(url.hash.split("?").slice(1).join("?"));
     const urlCode = url.searchParams.get("code") ?? hashParams.get("code");
-    if (urlCode) return urlCode;
+    if (urlCode !== null) return urlCode;
+
+    // Results links can carry survey answers before their first canonicalizing
+    // visit. Accept those same complete links in the code-recovery form.
+    const answers: Record<number, string> = {};
+    for (let index = 0; index < questionToSection.length; index++) {
+      const value = (url.searchParams.get(String(index)) ?? hashParams.get(String(index)) ?? "").trim().toUpperCase();
+      if (!["A", "B", "C"].includes(value)) break;
+      answers[index] = value;
+    }
+    if (Object.keys(answers).length === questionToSection.length) {
+      return buildBookCode(answers);
+    }
   } catch {
     // Fall through to embedded-code extraction for arbitrary pasted text.
   }

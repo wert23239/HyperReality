@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { isValidBookCode, normalizeBookCode } from "@/lib/chapters";
+import { isValidBookCode, normalizeBookCode, questionToSection } from "@/lib/chapters";
 
 const MAX_READER_NAME_LENGTH = 60;
 
@@ -34,7 +34,8 @@ function extractReaderNameInput(input: string): string | null {
     if (name !== undefined && name !== null) return cleanReaderName(name);
     // A pasted results link supplies its own personalization context, even
     // when anonymous. Only bare-code corrections inherit the broken link's name.
-    if (url.searchParams.has("code") || hashParams.has("code")) return "";
+    if (url.searchParams.has("code") || hashParams.has("code") ||
+        questionToSection.every((_, index) => url.searchParams.has(String(index)) || hashParams.has(String(index)))) return "";
     return null;
   } catch {
     return readerNameLine === undefined ? null : cleanReaderName(readerNameLine);

@@ -244,3 +244,29 @@ test('still accepts complete codes surrounded by prose or punctuation', () => {
     assert.equal(submitEntry(input).get('code'), code);
   }
 });
+
+
+test('code entry reopens complete survey-answer results links, including wrapped and hash links', () => {
+  const answers = new URLSearchParams({ 0: ' a ', 1: 'b', 2: 'C', 3: 'a', 4: 'B', 5: 'c', 6: 'A', 7: 'b' });
+  for (const prefix of ['https://example.com/results?', '/results?', '?', 'https://example.com/#/results?', '#/results?']) {
+    for (const name of ['', 'Alex Dr.']) {
+      const query = new URLSearchParams(answers);
+      if (name) query.set('name', name);
+      const link = `${prefix}${query}`;
+      for (const input of [link, `<${link}>`, `[My book](${link})`]) {
+        const params = submitEntry(input, { initialReaderName: 'Stale name' });
+        assert.equal(params.get('code'), code, input);
+        assert.equal(params.get('name'), name || null, input);
+      }
+    }
+  }
+});
+
+test('incomplete or invalid survey-answer links cannot silently default to a book', () => {
+  for (const query of ['0=A&1=B', '0=A&1=B&2=C&3=A&4=B&5=C&6=A&7=D']) {
+    const entry = renderEntry(`/results?${query}`);
+    entry.form.props.onSubmit({ preventDefault() {} });
+    assert.deepEqual(entry.routes, []);
+    assert.ok(entry.updates.some(([index, value]) => index === 2 && value));
+  }
+});
