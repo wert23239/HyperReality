@@ -274,7 +274,12 @@ export default function Survey() {
             Prepared for <span className="text-gray-600">{readerName}</span>
             <button
               type="button"
-              onClick={() => setReaderName("")}
+              onClick={() => {
+                setReaderName("");
+                // This button disappears after clearing; keep keyboard and
+                // screen-reader users oriented at the current question.
+                questionHeadingRef.current?.focus({ preventScroll: true });
+              }}
               className="ml-2 text-accent-blue underline underline-offset-4 hover:text-blue-700"
             >
               Clear name

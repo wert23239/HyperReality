@@ -7,6 +7,7 @@ const ts = require('typescript');
 // Exercise the real component with a deterministic clock and browser history.
 function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
   const document = { title: "Hyper Reality" };
+  const headingFocusCalls = [];
   const slots = [];
   const effects = [];
   const timers = new Map();
@@ -74,6 +75,12 @@ function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
     URLSearchParams,
   });
   let tree = module.exports.default();
+  function attachHeading(node) {
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'h2') node.props.ref.current = { focus: options => headingFocusCalls.push(options) };
+    [node.props?.children].flat(Infinity).forEach(attachHeading);
+  }
+  attachHeading(tree);
   const cleanups = effects.splice(0).map(fn => fn()).filter(Boolean);
   // Render again after the media-query effect initializes reduced motion.
   cursor = 0;
@@ -105,6 +112,7 @@ function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
       }
       findClear(tree).props.onClick();
     },
+    headingFocusCalls,
     get backCalls() { return backCalls; },
     history,
     pop: state => listeners.get('popstate')({ state }),
@@ -210,5 +218,21 @@ test('survey titles identify the current question, follow navigation, and restor
     }
     survey.unmount();
     assert.equal(survey.title, 'Hyper Reality');
+  }
+});
+
+
+test('Clear name returns focus to the current survey question without scrolling or changing answers', () => {
+  for (const reducedMotion of [false, true]) {
+    const survey = mountSurvey(3, reducedMotion, 'Alex');
+    const previousAnswers = { ...survey.slots[2] };
+    const previousFocusCount = survey.headingFocusCalls.length;
+    survey.clearName();
+    assert.equal(survey.headingFocusCalls.length, previousFocusCount + 1);
+    assert.equal(survey.headingFocusCalls.at(-1).preventScroll, true);
+    assert.equal(survey.slots[3], '');
+    assert.equal(survey.slots[1], 3);
+    assert.deepEqual({ ...survey.slots[2] }, previousAnswers);
+    assert.equal(survey.routes.length, 0);
   }
 });
