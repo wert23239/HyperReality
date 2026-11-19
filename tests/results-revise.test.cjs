@@ -107,6 +107,10 @@ function mountResults(options = {}) {
       nodes(render()).find(node => node.props?.id === 'reader-name').props.onChange({ target: { value } });
     },
     nameValue: () => nodes(render()).find(node => node.props?.id === 'reader-name').props.value,
+    nameHelp: () => nodes(render()).find(node => node.props?.id === 'reader-name-help').props.children,
+    saveName() {
+      nodes(render()).find(node => node.type === 'form').props.onSubmit({ preventDefault() {} });
+    },
     runEffects() {
       render();
       effects.splice(0).forEach(fn => fn());
@@ -218,4 +222,22 @@ test('canonicalizing a hash results link does not restore its removed reader nam
   results.runEffects();
   assert.equal(results.nameValue(), '');
   assert.equal(results.routes.at(-1), clearedURL);
+});
+
+
+test('cover-name drafts announce that sharing and downloads still use the saved name', () => {
+  const results = mountResults();
+  results.runEffects();
+  results.changeName('Alex');
+  assert.match(results.nameHelp(), /Unsaved name.*Save.*shared links, downloads, and printouts/);
+  results.saveName();
+  assert.match(results.nameHelp(), /^Name saved/);
+  results.changeName('Sam');
+  assert.match(results.nameHelp(), /^Unsaved name/);
+  results.changeName(' Alex  ');
+  assert.match(results.nameHelp(), /^Name saved/, 'normalization-equivalent edits are not unsaved changes');
+  results.changeName('');
+  assert.match(results.nameHelp(), /^Unsaved name/, 'deleting the input does not yet remove the saved cover name');
+  results.click('Clear');
+  assert.match(results.nameHelp(), /^Name removed/);
 });

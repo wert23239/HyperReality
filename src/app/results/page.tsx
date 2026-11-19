@@ -526,7 +526,9 @@ function ResultsContent() {
             )}
           </div>
           <p id="reader-name-help" className="text-center font-body text-xs text-gray-400" aria-live="polite">
-            {nameStatus === "saved"
+            {cleanReaderName(nameInput) !== readerName
+              ? "Unsaved name — select Save to include it in shared links, downloads, and printouts."
+              : nameStatus === "saved"
               ? "Name saved to this results link and download."
               : nameStatus === "removed"
                 ? "Name removed from this results link and download."
