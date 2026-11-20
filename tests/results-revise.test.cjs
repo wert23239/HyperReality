@@ -241,3 +241,21 @@ test('cover-name drafts announce that sharing and downloads still use the saved 
   results.click('Clear');
   assert.match(results.nameHelp(), /^Name removed/);
 });
+
+
+test('opening another book discards the previous book cover-name draft and feedback', () => {
+  const results = mountResults();
+  results.runEffects();
+  results.changeName('Alex');
+  results.saveName();
+  results.navigate(results.routes.at(-1));
+  results.runEffects();
+  results.changeName('Unsaved old draft');
+  results.runEffects();
+  assert.equal(results.nameValue(), 'Unsaved old draft', 'ordinary renders preserve ongoing edits');
+
+  results.navigate('/results?code=1B-2B-3C-4-5-6A-7B-8C-9A-10B-11&name=Alex');
+  results.runEffects();
+  assert.equal(results.nameValue(), 'Alex', 'a new book must start with its own saved URL name');
+  assert.doesNotMatch(results.nameHelp(), /Unsaved|Name saved/, 'save feedback belongs to the previous book');
+});

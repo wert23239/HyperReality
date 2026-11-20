@@ -143,10 +143,15 @@ function ResultsContent() {
   }, [code, isValid, readerNameParam, router, searchParams]);
 
   useEffect(() => {
+    // Drafts belong to this book, even when the next URL has the same name.
     const normalizedReaderName = cleanReaderName(readerNameParam);
     setReaderName(normalizedReaderName);
     setNameInput(normalizedReaderName);
-  }, [readerNameParam]);
+  }, [code, readerNameParam]);
+
+  useEffect(() => {
+    setNameStatus("idle");
+  }, [code]);
 
   useEffect(() => {
     if (!isValid) return;
