@@ -1,0 +1,238 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const ts = require('typescript');
+
+// Exercise the real component with a deterministic clock and browser history.
+function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
+  const document = { title: "Hyper Reality" };
+  const headingFocusCalls = [];
+  const slots = [];
+  const effects = [];
+  const timers = new Map();
+  const listeners = new Map();
+  const pushes = [];
+  const routes = [];
+  const entries = [{ surveyQ: current, surveyDepth: 0 }];
+  let historyIndex = 0;
+  let backCalls = 0;
+  const history = {
+    get state() { return entries[historyIndex]; },
+    pushState(state) {
+      pushes.push(state);
+      entries.splice(++historyIndex, Infinity, state);
+    },
+    replaceState(state) { entries[historyIndex] = state; },
+    back() {
+      backCalls++;
+      if (historyIndex > 0) listeners.get('popstate')({ state: entries[--historyIndex] });
+    },
+  };
+  let cursor = 0;
+  let timerId = 0;
+  const answers = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [i, 'A']));
+  const react = {
+    useState(initial) {
+      const i = cursor++;
+      if (!(i in slots)) slots[i] = typeof initial === 'function' ? initial() : initial;
+      return [slots[i], value => { slots[i] = typeof value === 'function' ? value(slots[i]) : value; }];
+    },
+    useRef(initial) {
+      const i = cursor++;
+      return slots[i] ??= { current: initial };
+    },
+    useCallback(fn) { return fn; },
+    useEffect(fn) { effects.push(fn); },
+  };
+  const jsx = (type, props) => ({ type, props });
+  const module = { exports: {} };
+  const source = ts.transpileModule(fs.readFileSync('src/app/survey/page.tsx', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText;
+  vm.runInNewContext(source, {
+    module, exports: module.exports, document,
+    require(name) {
+      if (name === 'react') return react;
+      if (name === 'react/jsx-runtime') return { jsx, jsxs: jsx };
+      if (name === 'next/navigation') return { useRouter: () => ({ push: url => routes.push(url) }) };
+      if (name === '@/lib/questions') return { questions: Array.from({ length: 8 }, () => ({ text: 'Question', options: [{ value: 'A', label: 'A', text: 'Answer' }] })) };
+      if (name === '@/lib/chapters') return { questionToSection: Array(8).fill(0) };
+      throw new Error(name);
+    },
+    sessionStorage: {
+      getItem: () => JSON.stringify({ current, answers, readerName }),
+      setItem() {}, removeItem() {},
+    },
+    window: {
+      history,
+      matchMedia: () => ({ matches: reducedMotion, addEventListener() {}, removeEventListener() {} }),
+      addEventListener: (name, fn) => listeners.set(name, fn),
+      removeEventListener: name => listeners.delete(name),
+    },
+    setTimeout: fn => { timers.set(++timerId, fn); return timerId; },
+    clearTimeout: id => timers.delete(id),
+    URLSearchParams,
+  });
+  let tree = module.exports.default();
+  function attachHeading(node) {
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'h2') node.props.ref.current = { focus: options => headingFocusCalls.push(options) };
+    [node.props?.children].flat(Infinity).forEach(attachHeading);
+  }
+  attachHeading(tree);
+  const cleanups = effects.splice(0).map(fn => fn()).filter(Boolean);
+  // Render again after the media-query effect initializes reduced motion.
+  cursor = 0;
+  tree = module.exports.default();
+  function findAnswer(node) {
+    if (!node || typeof node !== 'object') return;
+    if (node.props?.['aria-pressed'] !== undefined) return node;
+    return [node.props?.children].flat(Infinity).map(findAnswer).find(Boolean);
+  }
+  return {
+    answer: () => findAnswer(tree).props.onClick(),
+    render() {
+      cursor = 0;
+      tree = module.exports.default();
+    },
+    back() {
+      function findBack(node) {
+        if (!node || typeof node !== 'object') return;
+        if (node.type === 'button' && [node.props.children].flat().includes(' Back')) return node;
+        return [node.props?.children].flat(Infinity).map(findBack).find(Boolean);
+      }
+      findBack(tree).props.onClick();
+    },
+    clearName() {
+      function findClear(node) {
+        if (!node || typeof node !== 'object') return;
+        if (node.type === 'button' && node.props.children === 'Clear name') return node;
+        return [node.props?.children].flat(Infinity).map(findClear).find(Boolean);
+      }
+      findClear(tree).props.onClick();
+    },
+    headingFocusCalls,
+    get backCalls() { return backCalls; },
+    history,
+    pop: state => listeners.get('popstate')({ state }),
+    unmount: () => cleanups.forEach(fn => fn()),
+    flush() {
+      while (timers.size) {
+        const [id, fn] = timers.entries().next().value;
+        timers.delete(id);
+        fn();
+      }
+    },
+    get title() { return document.title; },
+    runEffects() { effects.splice(0).forEach(fn => fn()); },
+    pushes, routes, slots,
+  };
+}
+
+test('browser Back cancels a pending answer instead of pushing forward again', () => {
+  for (const destination of [{ surveyQ: 0 }, null]) {
+    const survey = mountSurvey();
+    survey.answer();
+    survey.pop(destination);
+    survey.flush();
+    assert.equal(survey.pushes.length, 0);
+    assert.equal(survey.routes.length, 0);
+    assert.equal(survey.slots[5], false); // animating
+  }
+});
+
+test('leaving the last question cancels delayed results navigation', () => {
+  const survey = mountSurvey(7);
+  survey.answer();
+  survey.unmount();
+  survey.flush();
+  assert.equal(survey.routes.length, 0);
+});
+
+test('ordinary and reduced-motion answers still advance', () => {
+  for (const reducedMotion of [false, true]) {
+    const survey = mountSurvey(1, reducedMotion);
+    survey.answer();
+    survey.flush();
+    assert.equal(survey.pushes[0].surveyQ, 2);
+  }
+});
+
+
+test('Back stays in the survey after returning to the resumed history boundary', () => {
+  for (const reducedMotion of [false, true]) {
+    const survey = mountSurvey(3, reducedMotion);
+    survey.answer();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.history.state.surveyQ, 4);
+
+    survey.back();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.slots[1], 3);
+    assert.equal(survey.backCalls, 1);
+
+    // At the original resume entry, browser Back would leave the survey.
+    survey.back();
+    survey.flush();
+    survey.render();
+    assert.equal(survey.slots[1], 2);
+    assert.equal(survey.history.state.surveyQ, 2);
+    assert.equal(survey.backCalls, 1);
+    assert.equal(survey.routes.length, 0);
+  }
+});
+
+
+test('clearing the reader name during the final answer transition keeps results anonymous', () => {
+  const survey = mountSurvey(7, false, 'Alex');
+  survey.answer();
+  survey.render();
+  survey.clearName();
+  survey.render();
+  survey.flush();
+  assert.equal(survey.routes.length, 1);
+  assert.equal(new URL(survey.routes[0], 'https://example.com').searchParams.has('name'), false);
+});
+
+test('finishing without clearing preserves the personalized reader name', () => {
+  const survey = mountSurvey(7, false, 'Alex');
+  survey.answer();
+  survey.flush();
+  assert.equal(new URL(survey.routes[0], 'https://example.com').searchParams.get('name'), 'Alex');
+});
+
+
+test('survey titles identify the current question, follow navigation, and restore on exit', () => {
+  for (const current of [0, 3, 7]) {
+    const survey = mountSurvey(current, true);
+    assert.equal(survey.title, `Question ${current + 1} of 8 | Hyper Reality`);
+    if (current < 7) {
+      survey.answer();
+      survey.flush();
+      survey.render();
+      survey.runEffects();
+      assert.equal(survey.title, `Question ${current + 2} of 8 | Hyper Reality`);
+    }
+    survey.unmount();
+    assert.equal(survey.title, 'Hyper Reality');
+  }
+});
+
+
+test('Clear name returns focus to the current survey question without scrolling or changing answers', () => {
+  for (const reducedMotion of [false, true]) {
+    const survey = mountSurvey(3, reducedMotion, 'Alex');
+    const previousAnswers = { ...survey.slots[2] };
+    const previousFocusCount = survey.headingFocusCalls.length;
+    survey.clearName();
+    assert.equal(survey.headingFocusCalls.length, previousFocusCount + 1);
+    assert.equal(survey.headingFocusCalls.at(-1).preventScroll, true);
+    assert.equal(survey.slots[3], '');
+    assert.equal(survey.slots[1], 3);
+    assert.deepEqual({ ...survey.slots[2] }, previousAnswers);
+    assert.equal(survey.routes.length, 0);
+  }
+});

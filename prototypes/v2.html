@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hyper Reality — Typographic</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Crimson+Pro:ital,wght@0,200;0,400;0,900;1,200;1,400&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1280px; height: 800px; overflow: hidden;
+  background: #faf8f5;
+  position: relative;
+  color: #1a1a1a;
+}
+/* subtle grain */
+body::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg width='300' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  z-index: 50;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+.left {
+  padding: 50px 40px 50px 60px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+}
+.right {
+  background: #1a1a1a;
+  color: #faf8f5;
+  padding: 50px 60px 50px 50px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative;
+}
+/* massive title */
+.title-hyper {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 140px; line-height: 0.85;
+  letter-spacing: -4px;
+  color: #1a1a1a;
+}
+.title-reality {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 140px; line-height: 0.85;
+  letter-spacing: -4px;
+  color: #1a1a1a;
+  -webkit-text-stroke: 2px #1a1a1a;
+  -webkit-text-fill-color: transparent;
+}
+.subtitle {
+  font-family: 'Crimson Pro', serif; font-weight: 200;
+  font-size: 18px; letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 20px; color: #8a8078;
+}
+.tagline-left {
+  font-family: 'Caveat', cursive; font-size: 36px;
+  margin-top: 30px; color: #c44;
+  transform: rotate(-1deg);
+}
+/* right side */
+.h-diagram-typo {
+  margin-top: 20px;
+}
+.h-diagram-typo svg { width: 280px; }
+.dice-row {
+  display: flex; gap: 24px; align-items: center;
+  margin-top: auto;
+}
+.dice-row svg { opacity: 0.9; }
+.right-meta {
+  font-family: 'Crimson Pro', serif; font-weight: 200;
+  font-size: 15px; letter-spacing: 2px; text-transform: uppercase;
+  color: #887;
+}
+.version-count {
+  font-family: 'Caveat', cursive; font-weight: 700;
+  font-size: 72px; line-height: 1;
+  color: #faf8f5;
+}
+.version-label {
+  font-family: 'Crimson Pro', serif; font-weight: 200;
+  font-size: 14px; letter-spacing: 4px; text-transform: uppercase;
+  color: #666;
+}
+.unique-text {
+  font-family: 'Caveat', cursive; font-size: 28px;
+  color: #c44; margin-top: 8px;
+}
+.cta-btn {
+  display: inline-block; margin-top: 30px;
+  font-family: 'Caveat', cursive; font-size: 28px;
+  background: #faf8f5; color: #1a1a1a;
+  padding: 14px 48px; border: none; cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.2s;
+}
+.cta-btn:hover { transform: scale(1.04); }
+/* vertical text */
+.vertical {
+  position: absolute; right: 15px; top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  font-family: 'Crimson Pro', serif; font-weight: 200;
+  font-size: 12px; letter-spacing: 6px; text-transform: uppercase;
+  color: #bbb; white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="left">
+    <div class="title-hyper">Hyper</div>
+    <div class="title-reality">Reality</div>
+    <div class="subtitle">The Mysterious Death of Alex Lambert 2</div>
+    <div class="tagline-left">"a cockroach vs. a king?"</div>
+    <div class="vertical">hyper reality • 2025</div>
+  </div>
+  <div class="right">
+    <div>
+      <div class="right-meta">The H-Diagram</div>
+      <div class="h-diagram-typo">
+        <svg viewBox="0 0 280 220" fill="none">
+          <line x1="50" y1="20" x2="50" y2="200" stroke="#faf8f5" stroke-width="1.5"/>
+          <line x1="230" y1="20" x2="230" y2="200" stroke="#faf8f5" stroke-width="1.5"/>
+          <line x1="50" y1="110" x2="230" y2="110" stroke="#faf8f5" stroke-width="1.5"/>
+          <text x="10" y="16" font-family="Caveat" font-size="18" fill="#c44">Hydrogen</text>
+          <text x="200" y="16" font-family="Caveat" font-size="18" fill="#8a8">Heaven</text>
+          <text x="28" y="218" font-family="Caveat" font-size="18" fill="#a66">Hell</text>
+          <text x="210" y="218" font-family="Caveat" font-size="18" fill="#88a">Habit</text>
+        </svg>
+      </div>
+    </div>
+    <div>
+      <div class="version-count">6,561</div>
+      <div class="version-label">Unique Versions</div>
+      <div class="unique-text">A book unique to YOU</div>
+    </div>
+    <div>
+      <div class="dice-row">
+        <svg width="50" height="44" viewBox="0 0 50 44"><polygon points="25,2 48,42 2,42" fill="none" stroke="#faf8f5" stroke-width="1.5"/><text x="25" y="34" text-anchor="middle" font-family="Caveat" font-size="16" fill="#faf8f5">3</text></svg>
+        <svg width="44" height="50" viewBox="0 0 44 50"><polygon points="22,2 42,25 22,48 2,25" fill="none" stroke="#faf8f5" stroke-width="1.5"/><text x="22" y="30" text-anchor="middle" font-family="Caveat" font-size="16" fill="#faf8f5">4</text></svg>
+        <svg width="50" height="50" viewBox="0 0 50 50"><polygon points="25,2 48,18 40,45 10,45 2,18" fill="none" stroke="#faf8f5" stroke-width="1.5"/><text x="25" y="33" text-anchor="middle" font-family="Caveat" font-size="16" fill="#faf8f5">5</text></svg>
+      </div>
+      <button class="cta-btn">Take the Survey →</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
