@@ -15,6 +15,7 @@ function mountResults(options = {}) {
   const writes = [];
   const removals = [];
   const focusCalls = [];
+  const chapterFocusCalls = [];
   let cursor = 0;
   let blocked = true;
   const jsx = (type, props) => ({ type, props });
@@ -90,6 +91,8 @@ function mountResults(options = {}) {
     const tree = wrapper.props.children.type();
     const input = nodes(tree).find(node => node.props?.id === 'reader-name');
     if (input?.props.ref) input.props.ref.current = { focus: options => focusCalls.push(options) };
+    const chapterList = nodes(tree).find(node => node.props?.['aria-label'] === 'Book chapters');
+    if (chapterList?.props.ref) chapterList.props.ref.current = { focus: options => chapterFocusCalls.push(options) };
     return tree;
   }
   function nodes(node) {
@@ -120,7 +123,8 @@ function mountResults(options = {}) {
       location.hash = next.hash;
       query = next.search.slice(1);
     },
-    routes, writes, removals, focusCalls,
+    chapterList: () => nodes(render()).find(node => node.props?.['aria-label'] === 'Book chapters'),
+    routes, writes, removals, focusCalls, chapterFocusCalls,
   };
 }
 
@@ -258,4 +262,19 @@ test('opening another book discards the previous book cover-name draft and feedb
   results.runEffects();
   assert.equal(results.nameValue(), 'Alex', 'a new book must start with its own saved URL name');
   assert.doesNotMatch(results.nameHelp(), /Unsaved|Name saved/, 'save feedback belongs to the previous book');
+});
+
+
+test('skipping the chapter reveal moves focus to the revealed chapter list', () => {
+  const results = mountResults();
+  results.click('Show all chapters now');
+  assert.equal(results.button('Show all chapters now'), undefined, 'skip button disappears after revealing');
+  assert.equal(results.chapterFocusCalls.length, 1, 'focus must not be lost with the removed button');
+  assert.equal(results.chapterFocusCalls[0].preventScroll, true);
+  const list = results.chapterList();
+  assert.equal(list.props.tabIndex, -1, 'chapter region accepts programmatic focus without a tab stop');
+  assert.ok(list.props.children.length > 0);
+  for (const chapter of list.props.children) {
+    assert.match(chapter.props.className, /opacity-100/);
+  }
 });

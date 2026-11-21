@@ -39,6 +39,7 @@ function ResultsContent() {
   const [readerName, setReaderName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const readerNameInputRef = useRef<HTMLInputElement>(null);
+  const chapterListRef = useRef<HTMLElement>(null);
   const [nameStatus, setNameStatus] = useState<"idle" | "saved" | "removed">("idle");
   const [reviseFailed, setReviseFailed] = useState(false);
   const [siteOrigin, setSiteOrigin] = useState("");
@@ -574,7 +575,13 @@ function ResultsContent() {
         )}
 
         {/* Chapters */}
-        <div className="space-y-3" aria-live="polite">
+        <section
+          ref={chapterListRef}
+          tabIndex={-1}
+          aria-label="Book chapters"
+          className="space-y-3"
+          aria-live="polite"
+        >
           {chapters.map((ch, i) => (
             <div
               key={ch.key}
@@ -593,13 +600,17 @@ function ResultsContent() {
               )}
             </div>
           ))}
-        </div>
+        </section>
 
         {!reducedMotion && revealed < chapters.length && (
           <div className="no-print text-center">
             <button
               type="button"
-              onClick={() => setRevealed(chapters.length)}
+              onClick={() => {
+                setRevealed(chapters.length);
+                // The skip button disappears; keep focus at the revealed content.
+                chapterListRef.current?.focus({ preventScroll: true });
+              }}
               className="font-body text-sm text-gray-400 underline underline-offset-4 hover:text-gray-600 transition-colors"
             >
               Show all chapters now
