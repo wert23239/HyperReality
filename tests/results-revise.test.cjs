@@ -278,3 +278,50 @@ test('skipping the chapter reveal moves focus to the revealed chapter list', () 
     assert.match(chapter.props.className, /opacity-100/);
   }
 });
+
+
+for (const label of ['Copy chapter list', 'Copy results link', 'Copy book code']) {
+  test(`${label} does not report an old clipboard operation on a different book`, async () => {
+    for (const fails of [false, true]) {
+      let settle;
+      const results = mountResults({ copy: () => new Promise((resolve, reject) => {
+        settle = () => fails ? reject(new Error('denied')) : resolve();
+      }) });
+      results.runEffects();
+      const pending = results.click(label);
+      results.navigate('/results?code=1B-2B-3C-4-5-6A-7B-8C-9A-10B-11');
+      results.runEffects();
+      settle();
+      await pending;
+      assert.ok(results.button(label), 'new book retains its untouched copy control');
+      assert.equal(results.alerts().length, 0, 'old clipboard failures must not appear on the new book');
+    }
+  });
+}
+
+test('changing personalization clears completed copy feedback', async () => {
+  const results = mountResults();
+  results.runEffects();
+  await results.click('Copy results link');
+  assert.ok(results.button('Copied results link'));
+  results.navigate('/results?code=1A-2B-3C-4-5-6A-7B-8C-9A-10B-11&name=Alex');
+  results.runEffects();
+  assert.ok(results.button('Copy results link'));
+});
+
+test('an old failed native share cannot copy its link after book navigation', async () => {
+  let rejectShare;
+  let copies = 0;
+  const results = mountResults({
+    navigator: { share: () => new Promise((resolve, reject) => { rejectShare = reject; }) },
+    copy: async () => { copies++; },
+  });
+  results.runEffects();
+  const pending = results.click('Share results');
+  results.navigate('/results?code=1B-2B-3C-4-5-6A-7B-8C-9A-10B-11');
+  results.runEffects();
+  rejectShare(new Error('share failed'));
+  await pending;
+  assert.equal(copies, 0, 'do not replace the clipboard with a book the reader left');
+  assert.ok(results.button('Share results'));
+});

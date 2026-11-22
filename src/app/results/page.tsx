@@ -79,6 +79,30 @@ function ResultsContent() {
   const chapters = isValid ? getChaptersFromCode(code) : [];
   const versionNumber = isValid ? getVersionNumberFromCode(code) : null;
   const readerNameParam = effectiveSearchParams.get("name") ?? "";
+  // Clipboard/share promises may settle after navigation. Their feedback (and
+  // fallback copies) belong only to the result where the action started.
+  const feedbackKey = JSON.stringify([code, cleanReaderName(readerNameParam)]);
+  const feedbackRef = useRef({ key: feedbackKey, token: {} });
+  if (feedbackRef.current.key !== feedbackKey) {
+    feedbackRef.current = { key: feedbackKey, token: {} };
+  }
+  const feedbackToken = feedbackRef.current.token;
+
+  function showFeedback<T extends string>(setStatus: (status: T | "idle") => void, status: T) {
+    if (feedbackRef.current.token !== feedbackToken) return;
+    setStatus(status);
+    window.setTimeout(() => {
+      if (feedbackRef.current.token === feedbackToken) setStatus("idle");
+    }, STATUS_RESET_DELAY);
+  }
+
+  useEffect(() => {
+    setCopyStatus("idle");
+    setCopyLinkStatus("idle");
+    setCopyCodeStatus("idle");
+    setShareStatus("idle");
+  }, [feedbackKey]);
+
   const answerRecap = isValid
     ? Object.entries(getAnswersFromBookCode(code) ?? {}).map(([questionIndex, value]) => {
         const question = questions[Number(questionIndex)];
@@ -243,33 +267,27 @@ function ResultsContent() {
   async function copyChapterList() {
     try {
       await copyTextToClipboard(getChapterListText());
-      setCopyStatus("copied");
-      window.setTimeout(() => setCopyStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyStatus, "copied");
     } catch {
-      setCopyStatus("failed");
-      window.setTimeout(() => setCopyStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyStatus, "failed");
     }
   }
 
   async function copyResultsLink() {
     try {
       await copyTextToClipboard(getResultsLink());
-      setCopyLinkStatus("copied");
-      window.setTimeout(() => setCopyLinkStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyLinkStatus, "copied");
     } catch {
-      setCopyLinkStatus("failed");
-      window.setTimeout(() => setCopyLinkStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyLinkStatus, "failed");
     }
   }
 
   async function copyBookCode() {
     try {
       await copyTextToClipboard(code);
-      setCopyCodeStatus("copied");
-      window.setTimeout(() => setCopyCodeStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyCodeStatus, "copied");
     } catch {
-      setCopyCodeStatus("failed");
-      window.setTimeout(() => setCopyCodeStatus("idle"), STATUS_RESET_DELAY);
+      showFeedback(setCopyCodeStatus, "failed");
     }
   }
 
@@ -287,8 +305,7 @@ function ResultsContent() {
             text: `Hyper Reality book code: ${code}`,
             url,
           });
-          setShareStatus("shared");
-          window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+          showFeedback(setShareStatus, "shared");
           return;
         } catch (error) {
           if (error instanceof DOMException && error.name === "AbortError") {
@@ -297,13 +314,12 @@ function ResultsContent() {
         }
       }
 
+      if (feedbackRef.current.token !== feedbackToken) return;
       try {
         await copyTextToClipboard(url);
-        setShareStatus("copied");
-        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+        showFeedback(setShareStatus, "copied");
       } catch {
-        setShareStatus("failed");
-        window.setTimeout(() => setShareStatus("idle"), STATUS_RESET_DELAY);
+        showFeedback(setShareStatus, "failed");
       }
     } finally {
       setSharing(false);
