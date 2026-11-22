@@ -38,6 +38,10 @@ export const chapterMap: Record<string, string> = {
 // Maps question index to section number
 export const questionToSection = [1, 2, 3, 6, 7, 8, 9, 10];
 export const fixedSections = [4, 5, 11];
+// Extract whole codes from exports, never a valid-looking substring of a typo.
+const bookCodeCandidatePattern =
+  /(?<![A-Z0-9])1[ABC][\s,.;:/|_–—−-]*2[ABC][\s,.;:/|_–—−-]*3[ABC][\s,.;:/|_–—−-]*4[\s,.;:/|_–—−-]*5[\s,.;:/|_–—−-]*6[ABC][\s,.;:/|_–—−-]*7[ABC][\s,.;:/|_–—−-]*8[ABC][\s,.;:/|_–—−-]*9[ABC][\s,.;:/|_–—−-]*10[ABC][\s,.;:/|_–—−-]*11(?![A-Z0-9])/i;
+const invisibleCharacterPattern = /[\u200B-\u200D\u2060\uFEFF]/g;
 
 export function buildBookCode(answers: Record<number, string>): string {
   const parts: string[] = [];
@@ -53,9 +57,118 @@ export function buildBookCode(answers: Record<number, string>): string {
   return parts.join("-");
 }
 
+const expectedCodeParts = [
+  /^1[ABC]$/,
+  /^2[ABC]$/,
+  /^3[ABC]$/,
+  /^4$/,
+  /^5$/,
+  /^6[ABC]$/,
+  /^7[ABC]$/,
+  /^8[ABC]$/,
+  /^9[ABC]$/,
+  /^10[ABC]$/,
+  /^11$/,
+];
+
+export function extractBookCodeInput(input: string): string {
+  const trimmed = input.replace(invisibleCharacterPattern, "").trim()
+    .replace(/^<(.+)>$/, "$1")
+    .replace(/^\[[^\]]+\]\((.+)\)$/, "$1");
+
+  try {
+    const url = new URL(trimmed, "https://hyper-reality.local");
+    const hashParams = new URLSearchParams(url.hash.split("?").slice(1).join("?"));
+    const urlCode = url.searchParams.get("code") ?? hashParams.get("code");
+    if (urlCode !== null) return urlCode;
+
+    // Results links can carry survey answers before their first canonicalizing
+    // visit. Accept those same complete links in the code-recovery form.
+    const answers: Record<number, string> = {};
+    for (let index = 0; index < questionToSection.length; index++) {
+      const value = (url.searchParams.get(String(index)) ?? hashParams.get(String(index)) ?? "").trim().toUpperCase();
+      if (!["A", "B", "C"].includes(value)) break;
+      answers[index] = value;
+    }
+    if (Object.keys(answers).length === questionToSection.length) {
+      return buildBookCode(answers);
+    }
+  } catch {
+    // Fall through to embedded-code extraction for arbitrary pasted text.
+  }
+
+  return trimmed.match(bookCodeCandidatePattern)?.[0] ?? trimmed;
+}
+
+export function normalizeBookCode(code: string): string {
+  const cleaned = extractBookCodeInput(code)
+    .trim()
+    .toUpperCase()
+    .replace(/[–—−]/g, "-")
+    .replace(/\s*-\s*/g, "-");
+
+  const compact = cleaned.replace(/[^A-Z0-9]/g, "");
+  const parts: string[] = [];
+  let cursor = 0;
+
+  for (let section = 1; section <= 11; section++) {
+    const sectionText = String(section);
+    if (!compact.startsWith(sectionText, cursor)) {
+      return cleaned.replace(/\s+/g, "");
+    }
+
+    cursor += sectionText.length;
+    if (fixedSections.includes(section)) {
+      parts.push(sectionText);
+    } else {
+      const variant = compact[cursor];
+      if (!variant || !/[ABC]/.test(variant)) {
+        return cleaned.replace(/\s+/g, "");
+      }
+      cursor += 1;
+      parts.push(`${sectionText}${variant}`);
+    }
+  }
+
+  return cursor === compact.length ? parts.join("-") : cleaned.replace(/\s+/g, "");
+}
+
+export function isValidBookCode(code: string): boolean {
+  const normalized = normalizeBookCode(code);
+  const parts = normalized.split("-");
+  if (parts.length !== 11) return false;
+
+  return parts.every((part, index) => (
+    expectedCodeParts[index].test(part) && Boolean(chapterMap[part])
+  ));
+}
+
 export function getChaptersFromCode(code: string): { key: string; title: string }[] {
-  return code.split("-").map((part) => ({
+  return normalizeBookCode(code).split("-").map((part) => ({
     key: part,
     title: chapterMap[part] || "Unknown",
   }));
+}
+
+export function getAnswersFromBookCode(code: string): Record<number, string> | null {
+  const normalized = normalizeBookCode(code);
+  if (!isValidBookCode(normalized)) return null;
+
+  const parts = normalized.split("-");
+  return questionToSection.reduce<Record<number, string>>((answers, section, questionIndex) => {
+    const sectionCode = parts[section - 1];
+    answers[questionIndex] = sectionCode.slice(String(section).length);
+    return answers;
+  }, {});
+}
+
+export function getVersionNumberFromCode(code: string): number | null {
+  const answers = getAnswersFromBookCode(code);
+  if (!answers) return null;
+
+  return questionToSection.reduce((versionIndex, _, questionIndex) => {
+    const answer = answers[questionIndex];
+    const variantIndex = answer === "C" ? 2 : answer === "B" ? 1 : 0;
+    return versionIndex * 3 + variantIndex;
+  }, 0) + 1;
 }
