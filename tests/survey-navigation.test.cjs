@@ -47,7 +47,7 @@ function mountSurvey(current = 1, reducedMotion = false, readerName = "") {
   };
   const jsx = (type, props) => ({ type, props });
   const module = { exports: {} };
-  const source = ts.transpileModule(fs.readFileSync('src/app/survey/page.tsx', 'utf8'), {
+  const source = ts.transpileModule(fs.readFileSync('src/components/Survey.tsx', 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   vm.runInNewContext(source, {
