@@ -270,3 +270,24 @@ test('incomplete or invalid survey-answer links cannot silently default to a boo
     assert.ok(entry.updates.some(([index, value]) => index === 2 && value));
   }
 });
+
+
+test('invalid code submission returns focus to the recovery field and preserves the draft', () => {
+  for (const input of ['', '1A-2B-typo', 'An incomplete chapter export']) {
+    const entry = renderEntry(input);
+    const field = findElement(entry.form, node => node.type === 'textarea');
+    entry.form.props.onSubmit({ preventDefault() {} });
+    assert.equal(entry.focusCount(), 1, 'Go must focus the field that needs correction');
+    assert.equal(field.props.value, input);
+    assert.equal(entry.routes.length, 0);
+    assert.ok(entry.updates.some(([index, value]) => index === 2 && value.includes("doesn't look right")));
+    assert.equal(entry.updates.some(([index]) => index === 1), false, 'do not erase the invalid draft');
+  }
+});
+
+test('valid code submission navigates without moving focus back to the field', () => {
+  const entry = renderEntry(code);
+  entry.form.props.onSubmit({ preventDefault() {} });
+  assert.equal(entry.routes.length, 1);
+  assert.equal(entry.focusCount(), 0);
+});

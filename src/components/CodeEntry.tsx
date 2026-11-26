@@ -70,6 +70,9 @@ export default function CodeEntry({
     const normalized = normalizeBookCode(code);
     if (!isValidBookCode(normalized)) {
       setError("That doesn't look right — paste a book code or results link like 1A-2B-3C-4-5-6A-7B-8C-9A-10B-11");
+      // Go may have keyboard focus; return readers to the draft they need to
+      // correct instead of leaving them on the submit button after an error.
+      inputRef.current?.focus();
       return;
     }
 
